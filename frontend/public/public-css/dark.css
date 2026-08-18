@@ -1,0 +1,67 @@
+/* Universal variables */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #000000;
+    --link-color: #007bff;
+  }
+  
+  body.dark-mode {
+    --bg-color: #121212;
+    --text-color: #f0f0f0;
+    --link-color: #66b2ff;
+  }
+  
+  /* Apply theme */
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  a {
+    color: var(--link-color);
+  }
+  
+  /* Toggle switch */
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+  }
+  
+  .theme-toggle input {
+    display: none;
+  }
+  
+  .theme-toggle label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background: #ccc;
+    width: 50px;
+    height: 24px;
+    border-radius: 34px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  
+  .theme-toggle label::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s;
+  }
+  
+  .theme-toggle input:checked + label {
+    background: #4caf50;
+  }
+  
+  .theme-toggle input:checked + label::before {
+    transform: translateX(26px);
+  }
+  

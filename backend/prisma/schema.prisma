@@ -1,0 +1,401 @@
+// Prisma Schema for Amaken Real Estate
+// MySQL 8.0
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserType {
+  User
+  Agent
+  Builder
+}
+
+enum Gender {
+  Male
+  Female
+  Other
+}
+
+enum PropertyType {
+  Villa
+  Apartment
+  Town_House
+  Pent_House
+  Compound
+  Duplex
+  Full_Floor
+  Half_Floor
+  Building
+  Bulk_Sale_Unit
+  Bungalow
+  Office
+  Shop
+  Mall
+  Hotel
+  Hotel_Apartment_or_Flat
+  Restaurant
+  Warehouse
+  Bedspace
+  Partition
+  Others
+}
+
+enum SellingType {
+  rent
+  sale
+  lease
+}
+
+enum BHK {
+  Open
+  One_BHK
+  Two_BHK
+  Three_BHK
+  Four_BHK
+  Five_BHK
+  One_Two_BHK
+  Two_Three_BHK
+  Two_Three_Four_BHK
+  Two_Three_Four_Five_BHK
+  Two_Three_Four_Five_Six_BHK
+}
+
+enum PropertyStatus {
+  available
+  sold_out
+}
+
+enum PlanType {
+  Off_Plan
+  Secondary
+  Ready_to_Move
+}
+
+enum DecorationType {
+  Furnished
+  Unfurnished
+  Partially_Furnished
+}
+
+enum Currency {
+  AED
+  USD
+  EUR
+  GBP
+  SAR
+  PKR
+  INR
+}
+
+enum DelAccountType {
+  delete
+  block
+  deactivate
+}
+
+enum DelAccountUserType {
+  user
+  admin
+}
+
+enum TeamType {
+  leader
+  Team
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  uid           Int       @id @default(autoincrement())
+  uname         String    @db.VarChar(255)
+  lname         String    @db.VarChar(255)
+  uemail        String    @unique @db.VarChar(255)
+  uphone        String    @db.VarChar(100)
+  upass         String    @db.VarChar(255)
+  utype         UserType  @default(User)
+  uimage        String    @default("") @db.VarChar(255)
+  date          String    @db.VarChar(50)
+  dateofbirth   String?   @db.VarChar(50)
+  Address       String?   @db.VarChar(500)
+  deactivate    Int       @default(1)
+  company       String?   @db.VarChar(255)
+  ucompanylogo  String?   @db.VarChar(255)
+  state         String?   @db.VarChar(255)
+  city          String?   @db.VarChar(255)
+  Companyaddress String?  @db.VarChar(500)
+  ugender       Gender?
+  uloginvalue   Int       @default(0)
+  wphone        String?   @db.VarChar(100)
+  fb            String?   @db.VarChar(500)
+  linkedin      String?   @db.VarChar(500)
+  tiktok        String?   @db.VarChar(500)
+  instagram     String?   @db.VarChar(500)
+  twitter       String?   @db.VarChar(500)
+  website       String?   @db.VarChar(500)
+  adminblock    Int       @default(0)
+  editprofile   DateTime?
+  editcomlogo   DateTime?
+  editpropic    DateTime?
+  linkpagedate  DateTime?
+  lastseen      DateTime?
+  udate         DateTime?
+
+  // Relations
+  properties    Property[]     @relation("UserProperties")
+  feedbackGiven Feedback[]     @relation("FeedbackFromUser")
+  deviceTokens  DeviceToken[]
+}
+
+model Admin {
+  aid              Int      @id @default(autoincrement())
+  aname            String   @db.VarChar(255)
+  aemail           String   @unique @db.VarChar(255)
+  aphone           String   @db.VarChar(100)
+  apass            String   @db.VarChar(255)
+  atype            String   @db.VarChar(50)
+  aimage           String   @default("") @db.VarChar(255)
+  joinadate        String   @db.VarChar(50)
+  adateofbirth     String?  @db.VarChar(50)
+  alname           String   @db.VarChar(255)
+  aAddress         String?  @db.VarChar(500)
+  awphone          String?  @db.VarChar(100)
+  adeactivate      Int      @default(0)
+  agency           String?  @db.VarChar(255)
+  companylogo      String?  @db.VarChar(255)
+  companywebsite   String?  @db.VarChar(500)
+  afb              String?  @db.VarChar(500)
+  ainstagram       String?  @db.VarChar(500)
+  atwitter         String?  @db.VarChar(500)
+  atiktok          String?  @db.VarChar(500)
+  alinkedin        String?  @db.VarChar(500)
+  astate           String?  @db.VarChar(255)
+  acity            String?  @db.VarChar(255)
+  acompanyAddress  String?  @db.VarChar(500)
+  agender          Gender?
+  onlinetime       String?  @db.VarChar(50)
+  aloginvalue      Int      @default(0)
+  adminblock       Int      @default(0)
+  main             String?  @db.VarChar(255)
+  website          String?  @db.VarChar(500)
+
+  // Relations
+  properties       Property[]     @relation("AdminProperties")
+  feedbackGiven    Feedback[]     @relation("FeedbackFromAdmin")
+  social           AdminSocial?
+}
+
+model Property {
+  id              Int             @id @default(autoincrement())
+  email           String          @db.VarChar(255)
+  date            String          @db.VarChar(50)
+  title           String          @db.VarChar(191)
+  pcontent        String?         @db.Text
+  type            PropertyType
+  bhk             BHK
+  stype           SellingType
+  bedroom         String          @default("") @db.VarChar(50)
+  bathroom        String          @default("") @db.VarChar(50)
+  balcony         String          @default("") @db.VarChar(50)
+  kitchen         String          @default("") @db.VarChar(50)
+  hall            String          @default("") @db.VarChar(50)
+  floor           String          @default("") @db.VarChar(100)
+  size            String          @default("") @db.VarChar(100)
+  price           String          @db.VarChar(100)
+  location        String          @db.VarChar(500)
+  city            String          @db.VarChar(255)
+  state           String          @db.VarChar(255)
+  pimage          String          @default("") @db.VarChar(255)
+  pimage1         String          @default("") @db.VarChar(255)
+  pimage2         String          @default("") @db.VarChar(255)
+  pimage3         String          @default("") @db.VarChar(255)
+  pimage4         String          @default("") @db.VarChar(255)
+  uid             Int
+  status          PropertyStatus  @default(available)
+  mapimage        String          @default("") @db.VarChar(255)
+  topmapimage     String          @default("") @db.VarChar(255)
+  groundmapimage  String          @default("") @db.VarChar(255)
+  totalfloor      String          @default("") @db.VarChar(100)
+  isFeatured      Int             @default(0)
+  offer           Int             @default(0)
+  plan            PlanType        @default(Secondary)
+  saleid          Int             @default(0)
+  decoration      DecorationType  @default(Unfurnished)
+  curr            Currency        @default(AED)
+  feature         String?         @db.Text
+  deactivate      Int             @default(1)
+  adminapproval   Int             @default(0)
+  video1          String          @default("") @db.VarChar(500)
+  video2          String          @default("") @db.VarChar(500)
+  video3          String          @default("") @db.VarChar(500)
+  brochure        String          @default("") @db.VarChar(500)
+  blocked_user    Int             @default(1)
+  adminblock      Int             @default(0)
+  aemail          String?         @db.VarChar(255)
+
+  // Relations
+  user            User?           @relation("UserProperties", fields: [uid], references: [uid])
+  admin           Admin?          @relation("AdminProperties", fields: [aemail], references: [aemail])
+  leads           PropertyLead[]
+
+  @@index([city])
+  @@index([state])
+  @@index([type])
+  @@index([stype])
+  @@index([price])
+  @@index([deactivate, adminapproval, blocked_user, adminblock])
+}
+
+model Pin {
+  id    Int    @id @default(autoincrement())
+  upin  String @db.VarChar(255)
+}
+
+model PropertyLead {
+  id          Int      @id @default(autoincrement())
+  pid         Int
+  title       String   @db.VarChar(255)
+  saleid      String   @db.VarChar(50)
+  name        String   @db.VarChar(255)
+  email       String   @db.VarChar(255)
+  nationality String   @db.VarChar(100)
+  phone       String   @db.VarChar(100)
+  ip          String   @db.VarChar(50)
+  device      String   @db.VarChar(255)
+  created_at  DateTime @default(now())
+
+  // Relations
+  property    Property @relation(fields: [pid], references: [id])
+
+  @@index([pid])
+  @@index([email])
+}
+
+model DelAccount {
+  id    Int               @id @default(autoincrement())
+  email String            @db.VarChar(255)
+  type  DelAccountType
+  utype DelAccountUserType
+  date  DateTime          @default(now())
+
+  @@index([email])
+  @@index([type])
+}
+
+model DeviceToken {
+  id      Int    @id @default(autoincrement())
+  user_id Int?
+  token   String @unique @db.VarChar(500)
+
+  user    User?  @relation(fields: [user_id], references: [uid])
+
+  @@index([user_id])
+}
+
+model City {
+  cid   Int    @id @default(autoincrement())
+  cname String @db.VarChar(255)
+  sid   Int
+
+  state State  @relation(fields: [sid], references: [sid])
+
+  @@index([sid])
+}
+
+model State {
+  sid   Int    @id @default(autoincrement())
+  sname String @db.VarChar(255)
+
+  cities City[]
+}
+
+model About {
+  id      Int    @id @default(autoincrement())
+  title   String? @db.VarChar(255)
+  content String @db.Text
+  image   String? @db.VarChar(255)
+}
+
+model Feedback {
+  fid          Int      @id @default(autoincrement())
+  uid          Int?
+  agid         Int?
+  fdescription String   @db.Text
+  status       Int      @default(0)
+  rating       Float    @default(0)
+  created_at   DateTime @default(now())
+  send_email   String   @db.VarChar(255)
+  receive_email String  @db.VarChar(255)
+  fblock       Int      @default(1)
+  fdeactivate  Int      @default(1)
+  fadminblock  Int      @default(0)
+
+  // Relations
+  user         User?    @relation("FeedbackFromUser", fields: [uid], references: [uid])
+  admin        Admin?   @relation("FeedbackFromAdmin", fields: [agid], references: [aid])
+
+  @@index([uid])
+  @@index([agid])
+  @@index([receive_email])
+}
+
+model TeamMember {
+  id       Int      @id @default(autoincrement())
+  fname    String   @db.VarChar(255)
+  lname    String   @db.VarChar(255)
+  email    String   @unique @db.VarChar(255)
+  wnumber  String   @db.VarChar(100)
+  pnumber  String   @db.VarChar(100)
+  about    String   @db.Text
+  type     TeamType
+  fb       String?  @db.VarChar(500)
+  ig       String?  @db.VarChar(500)
+  linkdin  String?  @db.VarChar(500)
+  tiktok   String?  @db.VarChar(500)
+  twitter  String?  @db.VarChar(500)
+  image    String   @db.VarChar(500)
+  position String   @db.VarChar(255)
+}
+
+model Contact {
+  id      Int    @id @default(autoincrement())
+  name    String @db.VarChar(255)
+  email   String @db.VarChar(255)
+  phone   String @db.VarChar(100)
+  subject String @db.VarChar(255)
+  message String @db.Text
+}
+
+model RegisterEmail {
+  id     Int    @id @default(autoincrement())
+  email  String @db.VarChar(255)
+  name   String @db.VarChar(255)
+  type   String @db.VarChar(50)
+  utype  String @db.VarChar(50)
+
+  @@index([email])
+}
+
+model AdminSocial {
+  admin_id   Int      @id
+  website    String?  @db.VarChar(500)
+  facebook   String?  @db.VarChar(500)
+  linkedin   String?  @db.VarChar(500)
+  instagram  String?  @db.VarChar(500)
+  tiktok     String?  @db.VarChar(500)
+  twitter    String?  @db.VarChar(500)
+  updated_at DateTime @default(now())
+
+  admin      Admin    @relation(fields: [admin_id], references: [aid])
+}
