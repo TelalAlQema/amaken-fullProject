@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const FROM_ADDRESS = process.env.SMTP_FROM || "no-reply@amakenrealestate.com";
-const SITE_NAME = "Amaken Real Estate";
+const SITE_NAME = process.env.SITE_NAME || "Amaken Real Estate";
 
 export async function sendOtpEmail(
   to: string,

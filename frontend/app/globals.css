@@ -87,6 +87,26 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Loading spinner */
+  .loading-spinner {
+    @apply inline-block h-5 w-5 animate-spin rounded-full border-2 border-current border-r-transparent;
+  }
+
+  /* Focus visible ring for keyboard navigation */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* Flaticon font */

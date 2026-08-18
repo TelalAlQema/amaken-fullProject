@@ -10,6 +10,10 @@ import {
   getFilePath,
 } from "./upload.service";
 
+function isLegacyHash(hash: string): boolean {
+  return !hash.startsWith("$2") && !hash.startsWith("$argon");
+}
+
 // ─── Admin PIN Verification (Step 1) ────────────────────────────────
 export async function verifyAdminPin(pin: string) {
   const pinRecord = await prisma.pin.findFirst({
@@ -43,8 +47,8 @@ export async function adminLogin(email: string, password: string) {
     throw new AppError("Email or password does not match", 401, "AUTH_FAILED");
   }
 
-  // Check admin block (skip for main admin with phone 552615993)
-  if (admin.adminblock === 1 && admin.main !== "552615993") {
+  // Check admin block (skip for main/owner admin)
+  if (admin.adminblock === 1 && admin.main !== process.env.ADMIN_MAIN_PHONE) {
     throw new AppError("This account has been blocked", 403, "ACCOUNT_BLOCKED");
   }
 
@@ -279,7 +283,14 @@ export async function changeAdminPassword(
   const admin = await prisma.admin.findFirst({ where: { aid: adminId } });
   if (!admin) throw new AppError("Admin not found", 404, "ADMIN_NOT_FOUND");
 
-  const valid = await bcrypt.compare(currentPassword, admin.apass);
+  let valid = false;
+  const stored = admin.apass;
+  if (isLegacyHash(stored)) {
+    const sha1 = crypto.createHash("sha1").update(currentPassword).digest("hex");
+    valid = sha1 === stored;
+  } else {
+    valid = await bcrypt.compare(currentPassword, stored);
+  }
   if (!valid) {
     throw new AppError("Current password is incorrect", 400, "PASSWORD_INCORRECT");
   }
@@ -458,9 +469,9 @@ export async function adminDeleteUser(userId: number) {
         date: now,
       },
     }),
-    prisma.user.delete({ where: { uid: userId } }),
     prisma.property.deleteMany({ where: { email: user.uemail } }),
     prisma.feedback.deleteMany({ where: { send_email: user.uemail } }),
+    prisma.user.delete({ where: { uid: userId } }),
   ]);
 
   return { message: "User deleted" };

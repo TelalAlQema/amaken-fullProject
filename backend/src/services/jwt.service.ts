@@ -1,7 +1,17 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "dev-refresh-secret";
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET and JWT_REFRESH_SECRET must be set in production");
+  }
+  console.warn("⚠️  Using fallback JWT secrets — NOT safe for production");
+}
+
+const SECRET = JWT_SECRET || "dev-secret-fallback-only";
+const REFRESH_SECRET = JWT_REFRESH_SECRET || "dev-refresh-fallback-only";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
@@ -20,7 +30,7 @@ export function generateAccessToken(
   tokenVersion?: number
 ): string {
   const payload: JwtPayload = { userId, email, role, type: "access", tokenVersion };
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
+  return jwt.sign(payload, SECRET, { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions);
 }
 
 export function generateRefreshToken(
@@ -30,12 +40,12 @@ export function generateRefreshToken(
   tokenVersion?: number
 ): string {
   const payload: JwtPayload = { userId, email, role, type: "refresh", tokenVersion };
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
+  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
 }
 
 export function verifyAccessToken(token: string): JwtPayload | null {
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const payload = jwt.verify(token, SECRET) as JwtPayload;
     if (payload.type !== "access") return null;
     return payload;
   } catch {
@@ -45,7 +55,7 @@ export function verifyAccessToken(token: string): JwtPayload | null {
 
 export function verifyRefreshToken(token: string): JwtPayload | null {
   try {
-    const payload = jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload;
+    const payload = jwt.verify(token, REFRESH_SECRET) as JwtPayload;
     if (payload.type !== "refresh") return null;
     return payload;
   } catch {

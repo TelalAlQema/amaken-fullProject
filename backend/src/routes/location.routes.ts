@@ -132,6 +132,7 @@ router.put(
   authenticate,
   requireRole("admin"),
   validateParams(cityIdParam),
+  validateBody(citySchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await locationService.updateCity(Number(req.params.id), {

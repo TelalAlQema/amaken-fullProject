@@ -82,7 +82,12 @@ export function getPropertyUploadDir(): string {
 }
 
 export function getFilePath(directory: string, filename: string): string {
-  return path.join(directory, filename);
+  const sanitized = path.basename(filename);
+  const resolved = path.resolve(directory, sanitized);
+  if (!resolved.startsWith(path.resolve(directory))) {
+    throw new Error("Invalid file path: directory traversal detected");
+  }
+  return resolved;
 }
 
 // ─── Property Image Upload (5 images + 3 floor/map images) ──────────

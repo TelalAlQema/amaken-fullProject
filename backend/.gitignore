@@ -1,32 +1,10 @@
-# Dependencies
 node_modules/
-.pnpm-store/
-
-# Build outputs
-dist/
-
-# Environment files
 .env
 .env.local
-.env.development.local
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-
-# Testing
+.env.production
+playwright-report/
+test-results/
+.next/
+.vercel/
 coverage/
-
-# Misc
-*.tsbuildinfo
+dist/

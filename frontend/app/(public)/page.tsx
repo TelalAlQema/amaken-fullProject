@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { getProperties, getAboutContent, getTeamMembers } from "@/lib/api";
 import PropertyCard from "@/components/shared/PropertyCard";
+import HeroSearch from "@/components/shared/HeroSearch";
 import { PropertyCardSkeleton } from "@/components/shared/Skeletons";
 import { CONTACT, SITE } from "@amaken/shared";
 import type { Property, About, TeamMember } from "@amaken/shared";
@@ -34,6 +35,30 @@ const POPULAR_PLACES = [
   { name: "Sharjah", slug: "Sharjah", color: "from-primary-700 to-primary-800" },
   { name: "Ajman", slug: "Ajman", color: "from-navy-dark to-navy" },
 ];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateAgent",
+  name: "Amaken Real Estate",
+  description: "Find your dream property in Dubai. Browse villas, apartments, townhouses and more with Amaken Real Estate.",
+  url: "https://amaken-realestate.com",
+  logo: "https://amaken-realestate.com/images/logo/amaken.png",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Al Reem Tower",
+    addressLocality: "Dubai",
+    addressCountry: "AE",
+  },
+  telephone: "+971552615993",
+  email: "info@amaken-realestate.com",
+  sameAs: [
+    "https://www.facebook.com/amakenrealestate",
+    "https://www.instagram.com/amakenrealestate",
+    "https://twitter.com/amakenrealestate",
+    "https://www.linkedin.com/company/amakenrealestate",
+    "https://www.youtube.com/@amakenrealestate",
+  ],
+};
 
 export default function HomePage() {
   const { data: offPlanData, isLoading: offPlanLoading } = useQuery({
@@ -68,25 +93,33 @@ export default function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Hero Section */}
-      <section className="relative flex min-h-[500px] items-center bg-cover bg-center md:min-h-[600px]" style={{ backgroundImage: "url('/images/banner/main.png')" }}>
+      <section className="relative bg-cover bg-center" style={{ backgroundImage: "url('/images/banner/main.png')" }}>
         <div className="absolute inset-0 bg-navy/70" />
-        <div className="container-custom relative z-10 py-20">
-          <div className="max-w-2xl">
-            <h1 className="mb-4 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-              Let us Help You Find Your Dream Home
-            </h1>
-            <p className="mb-8 text-lg text-gray-200">
-              Your trusted partner in finding the perfect property in Dubai and the UAE. We offer the best deals on villas, apartments, and commercial properties.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/properties" className="btn-primary text-base">
-                Browse Properties
-              </Link>
-              <Link href="/submit-property" className="rounded-lg border-2 border-white px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-navy">
-                Submit Property
-              </Link>
+        <div className="container-custom relative z-10 py-16 md:py-20">
+          <div className="grid items-start gap-8 lg:grid-cols-2">
+            <div className="max-w-2xl">
+              <h1 className="mb-4 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+                <span className="text-primary">Let us Help You Find</span> Your Dream Home
+              </h1>
+              <p className="mb-6 text-lg text-gray-200">
+                Your trusted partner in finding the perfect property in Dubai and the UAE. We offer the best deals on villas, apartments, and commercial properties.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link href="/properties" className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600">
+                  Browse Properties
+                </Link>
+                <Link href="/submit-property" className="rounded-lg border-2 border-white px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-navy">
+                  Submit Property
+                </Link>
+              </div>
             </div>
+            <HeroSearch />
           </div>
         </div>
       </section>

@@ -125,4 +125,38 @@ router.delete(
   }
 );
 
+// ─── GET /api/feedback/admin/company (Admin: company feedback) ───────
+router.get(
+  "/admin/company",
+  authenticate,
+  requireRole("admin"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 50;
+      const result = await feedbackService.getCompanyFeedback(req.user!.email, page, limit);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// ─── GET /api/feedback/admin/agents (Admin: agent feedback) ──────────
+router.get(
+  "/admin/agents",
+  authenticate,
+  requireRole("admin"),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 50;
+      const result = await feedbackService.getAgentFeedback(page, limit);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;

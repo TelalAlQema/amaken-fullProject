@@ -31,7 +31,7 @@ function verifyOtp(email: string, code: string, purpose: string): boolean {
     otpStore.delete(key);
     return false;
   }
-  if (stored.code !== code) return false;
+  if (!crypto.timingSafeEqual(Buffer.from(stored.code), Buffer.from(code))) return false;
   otpStore.delete(key);
   return true;
 }

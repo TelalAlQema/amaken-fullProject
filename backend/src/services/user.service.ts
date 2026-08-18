@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import prisma from "../lib/prisma";
 import { AppError } from "../middleware/errorHandler";
 import {
@@ -7,6 +8,18 @@ import {
   getUserUploadDir,
   getFilePath,
 } from "./upload.service";
+
+function isLegacyHash(hash: string): boolean {
+  return !hash.startsWith("$2") && !hash.startsWith("$argon");
+}
+
+async function verifyPasswordLegacy(currentPassword: string, storedHash: string): Promise<boolean> {
+  if (isLegacyHash(storedHash)) {
+    const sha256 = crypto.createHash("sha256").update(currentPassword).digest("hex");
+    return sha256 === storedHash;
+  }
+  return bcrypt.compare(currentPassword, storedHash);
+}
 
 // ─── Get Current User Profile ───────────────────────────────────────
 export async function getProfile(userId: number) {
@@ -249,7 +262,7 @@ export async function changePassword(
     throw new AppError("User not found", 404, "USER_NOT_FOUND");
   }
 
-  const valid = await bcrypt.compare(currentPassword, user.upass);
+  const valid = await verifyPasswordLegacy(currentPassword, user.upass);
   if (!valid) {
     throw new AppError("Current password is incorrect", 400, "PASSWORD_INCORRECT");
   }

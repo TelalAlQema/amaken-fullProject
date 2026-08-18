@@ -55,13 +55,41 @@ export default function Header() {
                 {userMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                    <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg bg-white py-2 shadow-lg">
+                    <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg bg-white py-2 shadow-lg">
                       <Link
                         href="/profile"
                         onClick={() => setUserMenuOpen(false)}
                         className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
                       >
                         My Profile
+                      </Link>
+                      <Link
+                        href="/profile/edit"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
+                      >
+                        Edit Profile
+                      </Link>
+                      <Link
+                        href="/profile/picture"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
+                      >
+                        Edit Profile Picture
+                      </Link>
+                      <Link
+                        href="/profile/logo"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
+                      >
+                        Edit Company Logo
+                      </Link>
+                      <Link
+                        href="/profile/links"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
+                      >
+                        Edit Social Links
                       </Link>
                       <Link
                         href="/my-properties"
@@ -83,6 +111,13 @@ export default function Header() {
                         className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
                       >
                         My Feedback
+                      </Link>
+                      <Link
+                        href="/profile/password"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-amaken-gray hover:bg-gray-50 hover:text-navy"
+                      >
+                        Change Password
                       </Link>
                       <hr className="my-1" />
                       <button

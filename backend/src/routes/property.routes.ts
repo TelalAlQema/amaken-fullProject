@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { validateBody, validateQuery, validateParams } from "../middleware/validate";
-import { authenticate, requireRole, optionalAuth } from "../middleware/auth";
+import { authenticate, requireRole } from "../middleware/auth";
 import { uploadPropertyImages } from "../services/upload.service";
 import * as propertyService from "../services/property.service";
 import { AppError } from "../middleware/errorHandler";

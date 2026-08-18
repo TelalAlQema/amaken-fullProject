@@ -10,6 +10,16 @@ import routes from "./routes";
 
 dotenv.config();
 
+const requiredEnvVars = ["DATABASE_URL", "JWT_SECRET", "JWT_REFRESH_SECRET"];
+for (const key of requiredEnvVars) {
+  if (!process.env[key]) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+    console.warn(`⚠️  Missing env var: ${key} — using defaults (development only)`);
+  }
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -44,7 +54,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 // Logging
-app.use(morgan("dev"));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -74,9 +84,31 @@ app.use((_req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 API server running on http://localhost:${PORT}`);
   console.log(`📚 Environment: ${process.env.NODE_ENV}`);
+});
+
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received. Shutting down gracefully...");
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGINT", () => {
+  console.log("SIGINT received. Shutting down...");
+  server.close(() => process.exit(0));
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  server.close(() => process.exit(1));
 });
 
 export default app;
