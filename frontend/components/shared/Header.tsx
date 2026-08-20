@@ -8,11 +8,11 @@ import { useAuth } from "@/components/providers/AuthProvider";
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-  { label: "Properties", href: "/properties" },
-  { label: "Blogs", href: "/blog" },
-  { label: "Agents", href: "/agents" },
   { label: "Our Team", href: "/team" },
+  { label: "Properties", href: "/properties" },
+  { label: "Agents", href: "/agents" },
+  { label: "Blogs", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export default function Header() {
