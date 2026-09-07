@@ -120,7 +120,7 @@ export default function HeroSearch() {
       <div className="mt-4 flex justify-center">
         <button
           type="submit"
-          className="flex items-center gap-2 rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
+          className="flex items-center gap-2 rounded-lg bg-secondary px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
         >
           <svg
             className="h-4 w-4"

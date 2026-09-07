@@ -30,6 +30,7 @@ export default function AdminPinPage() {
       } else {
         setError(data.error?.message || "Invalid PIN. Please try again.");
       }
+      
     } catch {
       setError("Invalid PIN. Please try again.");
     } finally {
@@ -42,7 +43,7 @@ export default function AdminPinPage() {
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
         <div className="flex flex-col items-center gap-4 mb-8">
           <Image
-            src="/images/logo/amaken.png"
+            src="/images/logo/title.png"
             alt="Amaken"
             width={80}
             height={80}

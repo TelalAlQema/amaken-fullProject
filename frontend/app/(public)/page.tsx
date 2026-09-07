@@ -49,7 +49,7 @@ const jsonLd = {
     addressLocality: "Dubai",
     addressCountry: "AE",
   },
-  telephone: "+971552615993",
+  telephone: "+971558965353",
   email: "info@amaken-realestate.com",
   sameAs: [
     "https://www.facebook.com/amakenrealestate",
@@ -105,13 +105,13 @@ export default function HomePage() {
           <div className="grid items-start gap-8 lg:grid-cols-2">
             <div className="max-w-2xl">
               <h1 className="mb-4 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-                <span className="text-primary">Let us Help You Find</span> Your Dream Home
+                <span className="text-secondary">Let us Help You Find</span> Your Dream Home
               </h1>
               <p className="mb-6 text-lg text-gray-200">
                 Your trusted partner in finding the perfect property in Dubai and the UAE. We offer the best deals on villas, apartments, and commercial properties.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link href="/properties" className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600">
+                <Link href="/properties" className="rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600">
                   Browse Properties
                 </Link>
                 <Link href="/submit-property" className="rounded-lg border-2 border-white px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-navy">

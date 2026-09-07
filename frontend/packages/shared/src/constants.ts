@@ -79,9 +79,9 @@ export const PROPERTY_VISIBILITY = {
 
 // Contact info
 export const CONTACT = {
-  PHONE: "+971 55 261 5993",
+  PHONE: "+971 55 896 5353",
   EMAIL: "info@amaken-realestate.com",
-  WHATSAPP: "+971552615993",
+  WHATSAPP: "+971558965353",
   ADDRESS: "Dubai, United Arab Emirates",
 } as const;
 

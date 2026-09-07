@@ -142,10 +142,10 @@ export default function Header() {
       </div>
 
       {/* Main Nav */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white shadow-sm">
+      <header className="sticky top-0 z-50 border-b border-gray-100 shadow-sm" style={{ backgroundColor: "#D7BC3B" }}>
         <div className="container-custom flex items-center justify-between py-3">
           <Link href="/" className="flex items-center">
-            <img src="/images/logo/amaken.png" alt={SITE.NAME} className="h-10 w-auto" />
+            <img src="/images/logo/amaken.png" alt={SITE.NAME} className="h-auto w-20" />
           </Link>
 
           <nav className="hidden items-center gap-6 lg:flex">
@@ -153,7 +153,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-amaken-gray transition-colors hover:text-primary"
+                className="text-sm font-medium text-navy transition-colors hover:text-primary-dark"
               >
                 {link.label}
               </Link>
@@ -163,14 +163,14 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link
               href="/submit-property"
-              className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-600 sm:inline-flex"
+              className="hidden rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark sm:inline-flex"
             >
               Submit Property
             </Link>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="rounded-lg p-2 text-amaken-gray hover:bg-gray-100 lg:hidden"
+              className="rounded-lg p-2 text-navy hover:bg-white/20 lg:hidden"
               aria-label="Toggle menu"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,23 +185,23 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-gray-100 bg-white px-4 pb-4 lg:hidden">
+          <div className="border-t border-white/20 px-4 pb-4 lg:hidden" style={{ backgroundColor: "#D7BC3B" }}>
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block py-2.5 text-sm font-medium text-amaken-gray transition-colors hover:text-primary"
+                className="block py-2.5 text-sm font-medium text-navy transition-colors hover:text-primary-dark"
               >
                 {link.label}
               </Link>
             ))}
             {isAuthenticated ? (
               <>
-                <Link href="/profile" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-amaken-gray hover:text-primary">
+                <Link href="/profile" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-navy hover:text-primary-dark">
                   My Profile
                 </Link>
-                <Link href="/my-properties" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-amaken-gray hover:text-primary">
+                <Link href="/my-properties" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-navy hover:text-primary-dark">
                   My Properties
                 </Link>
                 <button
@@ -213,10 +213,10 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white">
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white">
                   Login
                 </Link>
-                <Link href="/verify-email" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg border-2 border-primary px-4 py-2.5 text-center text-sm font-semibold text-primary">
+                <Link href="/verify-email" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg border-2 border-navy px-4 py-2.5 text-center text-sm font-semibold text-navy">
                   Register
                 </Link>
               </>
@@ -224,7 +224,7 @@ export default function Header() {
             <Link
               href="/submit-property"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 block rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white"
+              className="mt-2 block rounded-lg bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white"
             >
               Submit Property
             </Link>

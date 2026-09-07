@@ -27,7 +27,7 @@ export default function Footer() {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* About */}
           <div>
-            <img src="/images/logo/amaken.png" alt={SITE.NAME} className="mb-4 h-10 w-auto brightness-0 invert" />
+            <img src="/images/logo/amaken-footer.png" alt={SITE.NAME} className="mb-4 h-auto w-40 " />
             <p className="mb-4 text-sm leading-relaxed">
               {SITE.TAGLINE}. Your trusted partner in finding the perfect property in Dubai and the UAE.
             </p>

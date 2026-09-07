@@ -6,9 +6,33 @@ import { useRouter } from "next/navigation";
 import { authRegister } from "@/lib/api";
 
 export default function SocialRegisterPage() {
+   const [email, setEmail] = useState("");
+  const [regData, setRegData] = useState("");
   const router = useRouter();
-  const email = sessionStorage.getItem("reg_email") || "";
-  const regData = sessionStorage.getItem("reg_form_data");
+  // const email = sessionStorage.getItem("reg_email") || "";
+ 
+
+useEffect(() => {
+  const storedEmail = sessionStorage.getItem("reg_email") || "";
+  setEmail(storedEmail);
+
+  if (!storedEmail) {
+    router.push("/verify-email");
+  }
+}, [router]);
+  // const regData = sessionStorage.getItem("reg_form_data");
+
+   useEffect(() => {
+    const storedEmail = sessionStorage.getItem("reg_email") || "";
+    const storedRegData = sessionStorage.getItem("reg_form_data") || "";
+
+    setEmail(storedEmail);
+    setRegData(storedRegData);
+
+    if (!storedEmail || !storedRegData) {
+      router.push("/verify-email");
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!email || !regData) router.push("/verify-email");

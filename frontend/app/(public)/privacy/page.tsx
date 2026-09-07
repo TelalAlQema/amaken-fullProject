@@ -77,7 +77,7 @@ export default function PrivacyPage() {
             <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.</p>
 
             <h2>12. Contact Us</h2>
-            <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:info@amaken-realestate.com">info@amaken-realestate.com</a> or call <a href="tel:+971552615993">+971 55 261 5993</a>.</p>
+            <p>If you have questions about this Privacy Policy, please contact us at <a href="mailto:info@amaken-realestate.com">info@amaken-realestate.com</a> or call <a href="tel:+971558965353">+971 55 896 5353</a>.</p>
           </div>
         </div>
       </section>

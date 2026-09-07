@@ -2,17 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #0E1033;
+  --color-primary-tint: #3B3E66;
+  --color-primary-dark: #0A0B26;
+  --color-secondary: #D7BC3B;
+  --color-secondary-tint: #E8D687;
+  --color-secondary-shade: #B89A2A;
+  --color-text: #231F20;
+  --color-bg: #FFFFFF;
+  --color-bg-alt: #F5F5F5;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply font-body text-amaken-gray antialiased;
+    @apply font-body antialiased;
+    color: var(--color-text);
+    background-color: var(--color-bg);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-navy;
+    @apply font-heading;
+    color: var(--color-primary);
   }
 
   img {
@@ -22,27 +37,56 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-secondary-shade);
+  }
+  .btn-primary:focus {
+    ring-color: var(--color-secondary);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg bg-navy px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-navy-light focus:outline-none focus:ring-2 focus:ring-navy focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    background-color: var(--color-primary);
+  }
+  .btn-secondary:hover {
+    background-color: var(--color-primary-tint);
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg border-2 border-primary px-6 py-3 text-sm font-semibold text-primary transition-all hover:bg-primary hover:text-white;
+    @apply inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-semibold transition-all;
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+  }
+  .btn-outline:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
   }
 
   .input-field {
-    @apply w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+    @apply w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2;
+    border-color: #d1d5db;
+  }
+  .input-field:focus {
+    border-color: var(--color-secondary);
+    ring-color: rgba(215, 188, 59, 0.2);
   }
 
   .select-field {
-    @apply w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20;
+    @apply w-full rounded-lg border bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2;
+    border-color: #d1d5db;
+  }
+  .select-field:focus {
+    border-color: var(--color-secondary);
+    ring-color: rgba(215, 188, 59, 0.2);
   }
 
   .card {
-    @apply rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg;
+    @apply rounded-lg shadow-md transition-shadow hover:shadow-lg;
+    background-color: var(--color-bg);
   }
 
   .container-custom {
@@ -50,15 +94,19 @@
   }
 
   .section-heading {
-    @apply mb-8 text-center text-3xl font-bold text-navy;
+    @apply mb-8 text-center text-3xl font-bold;
+    color: var(--color-primary);
   }
 
   .section-subheading {
-    @apply mb-12 text-center text-amaken-gray;
+    @apply mb-12 text-center;
+    color: var(--color-text);
+    opacity: 0.7;
   }
 
   .page-banner {
     @apply relative flex min-h-[260px] items-center bg-cover bg-center py-16 md:min-h-[320px];
+    background-color: var(--color-primary);
   }
 }
 
@@ -95,7 +143,8 @@
 
   /* Focus visible ring for keyboard navigation */
   *:focus-visible {
-    @apply outline-2 outline-offset-2 outline-primary;
+    @apply outline-2 outline-offset-2;
+    outline-color: var(--color-secondary);
   }
 
   /* Reduced motion preference */
@@ -128,14 +177,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-bg-alt);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c5c5c5;
+  background: var(--color-primary-tint);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--color-primary);
 }

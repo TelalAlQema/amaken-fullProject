@@ -45,7 +45,7 @@ export default function TermsPage() {
             <p>We reserve the right to modify these Terms and Conditions at any time. Changes will be effective immediately upon posting on the website.</p>
 
             <h2>10. Contact Us</h2>
-            <p>If you have any questions about these Terms and Conditions, please contact us at <a href="mailto:info@amaken-realestate.com">info@amaken-realestate.com</a> or call <a href="tel:+971552615993">+971 55 261 5993</a>.</p>
+            <p>If you have any questions about these Terms and Conditions, please contact us at <a href="mailto:info@amaken-realestate.com">info@amaken-realestate.com</a> or call <a href="tel:+971558965353">+971 55 896 5353</a>.</p>
           </div>
         </div>
       </section>

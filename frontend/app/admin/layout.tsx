@@ -25,10 +25,6 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const isAuthPage =
     pathname === "/admin/login" || pathname === "/admin/login/email";
 
-  if (isAuthPage) {
-    return <>{children}</>;
-  }
-
   const { data: countsData } = useQuery({
     queryKey: ["admin-sidebar-counts"],
     queryFn: async () => {
@@ -43,6 +39,10 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       router.push("/admin/login");
     }
   }, [isLoading, isAuthenticated, router]);
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (

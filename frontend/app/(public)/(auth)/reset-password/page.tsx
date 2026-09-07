@@ -6,9 +6,23 @@ import { useRouter } from "next/navigation";
 import { authResetPassword } from "@/lib/api";
 
 export default function ResetPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [resetToken, setResetToken] = useState("");
   const router = useRouter();
-  const email = sessionStorage.getItem("reset_email") || "";
-  const resetToken = sessionStorage.getItem("reset_token") || "";
+
+ 
+
+useEffect(() => {
+  const storedEmail = sessionStorage.getItem("reset_email") || "";
+  const storedResetToken = sessionStorage.getItem("reset_token") || "";
+
+  setEmail(storedEmail);
+  setResetToken(storedResetToken);
+
+  if (!storedEmail || !storedResetToken) {
+    router.push("/forgot-password");
+  }
+}, [router]);
 
   useEffect(() => {
     if (!email || !resetToken) router.push("/forgot-password");

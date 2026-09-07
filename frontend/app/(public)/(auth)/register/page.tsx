@@ -7,8 +7,20 @@ import { authRegister } from "@/lib/api";
 import { PROPERTY_TYPES, USER_TYPES, GENDERS, BHK_OPTIONS, SELLING_TYPES, PLAN_TYPES, DECORATION_TYPES, CURRENCIES } from "@amaken/shared";
 
 export default function RegisterPage() {
+  const [email, setEmail] = useState("");
   const router = useRouter();
-  const email = sessionStorage.getItem("reg_email") || "";
+
+  
+
+useEffect(() => {
+  const storedEmail = sessionStorage.getItem("reg_email") || "";
+  setEmail(storedEmail);
+
+  if (!storedEmail) {
+    router.push("/verify-email");
+  }
+}, [router]);
+  // const email = sessionStorage.getItem("reg_email") || "";
 
   useEffect(() => {
     if (!email) router.push("/verify-email");
