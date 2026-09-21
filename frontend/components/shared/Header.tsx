@@ -54,8 +54,8 @@ export default function Header() {
                 </button>
                 {userMenuOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                    <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg bg-white py-2 shadow-lg">
+                    <div className="fixed inset-0 z-[90]" onClick={() => setUserMenuOpen(false)} />
+                    <div className="absolute right-0 top-full z-[100] mt-2 w-56 rounded-lg bg-white py-2 shadow-lg">
                       <Link
                         href="/profile"
                         onClick={() => setUserMenuOpen(false)}

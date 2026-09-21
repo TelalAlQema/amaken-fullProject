@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function LoginPage() {
@@ -11,10 +11,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/profile";
+
+  useEffect(() => {
+    if (!success) return;
+    const timer = setTimeout(() => router.push("/"), 1500);
+    return () => clearTimeout(timer);
+  }, [success, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +27,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      router.push(redirect);
+      setSuccess(true);
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -36,6 +41,37 @@ export default function LoginPage() {
 
   return (
     <>
+      {success ? (
+        <div className="py-6 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <svg
+              className="h-9 w-9 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+            >
+              <path d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="mb-2 text-center font-heading text-2xl font-bold text-navy">
+            Login Successful
+          </h2>
+          <p className="text-sm text-amaken-gray">
+            Welcome back! You are being redirected...
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="btn-primary mt-6 w-full"
+          >
+            Continue
+          </button>
+        </div>
+      ) : (
+      <>
       <h2 className="mb-2 text-center font-heading text-2xl font-bold text-navy">
         Welcome Back
       </h2>
@@ -137,6 +173,8 @@ export default function LoginPage() {
           Register now
         </Link>
       </p>
+      </>
+      )}
     </>
   );
 }

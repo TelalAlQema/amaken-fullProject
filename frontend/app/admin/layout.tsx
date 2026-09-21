@@ -24,12 +24,8 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const isAuthPage =
     pathname === "/admin/login" || pathname === "/admin/login/email";
 
-  if (isAuthPage) {
-    return <>{children}</>;
-  }
-
   const { data: countsData } = useGetSidebarCountsQuery(undefined, {
-    skip: !isAuthenticated,
+    skip: !isAuthenticated || isAuthPage,
   });
 
   const sidebarCounts =
@@ -38,10 +34,14 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       : {};
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthPage && !isLoading && !isAuthenticated) {
       router.push("/admin/login");
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router, isAuthPage]);
+
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (

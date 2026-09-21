@@ -102,7 +102,7 @@ export async function updateProfile(
   if (data.dateOfBirth !== undefined) updateData.dateofbirth = data.dateOfBirth;
   if (data.wphone !== undefined) updateData.wphone = data.wphone.substring(0, 20);
   if (data.utype !== undefined) updateData.utype = data.utype;
-  updateData.editprofile = new Date();
+  updateData.editprofile = new Date().toISOString();
 
   const updated = await prisma.user.update({
     where: { uid: userId },
@@ -148,7 +148,7 @@ export async function uploadProfileImage(userId: number, file: Express.Multer.Fi
 
   await prisma.user.update({
     where: { uid: userId },
-    data: { uimage: filename, editpropic: new Date() },
+    data: { uimage: filename, editpropic: new Date().toISOString() },
   });
 
   return { image: filename, message: "Profile image updated" };
@@ -168,7 +168,7 @@ export async function removeProfileImage(userId: number) {
 
   await prisma.user.update({
     where: { uid: userId },
-    data: { uimage: "", editpropic: new Date() },
+    data: { uimage: "", editpropic: new Date().toISOString() },
   });
 
   return { message: "Profile image removed" };
@@ -192,7 +192,7 @@ export async function uploadCompanyLogo(userId: number, file: Express.Multer.Fil
 
   await prisma.user.update({
     where: { uid: userId },
-    data: { ucompanylogo: filename, editcomlogo: new Date() },
+    data: { ucompanylogo: filename, editcomlogo: new Date().toISOString() },
   });
 
   return { logo: filename, message: "Company logo updated" };
@@ -212,7 +212,7 @@ export async function removeCompanyLogo(userId: number) {
 
   await prisma.user.update({
     where: { uid: userId },
-    data: { ucompanylogo: "", editcomlogo: new Date() },
+    data: { ucompanylogo: "", editcomlogo: new Date().toISOString() },
   });
 
   return { message: "Company logo removed" };
@@ -244,7 +244,7 @@ export async function updateSocialLinks(
       instagram: data.instagram || null,
       twitter: data.twitter || null,
       website: data.website || null,
-      linkpagedate: new Date(),
+      linkpagedate: new Date().toISOString(),
     },
   });
 
@@ -271,7 +271,7 @@ export async function changePassword(
 
   await prisma.user.update({
     where: { uid: userId },
-    data: { upass: hashedPassword, udate: new Date() },
+    data: { upass: hashedPassword, udate: new Date().toISOString() },
   });
 
   return { message: "Password updated successfully" };

@@ -56,14 +56,14 @@ export default function EditProfilePage() {
         data: {
           uname: formData.fname,
           lname: formData.lname,
-          dateofbirth: formData.date,
+          dateOfBirth: formData.date || null,
           uphone: formData.phone,
           wphone: formData.wphone,
           Address: formData.Address,
-          ugender: formData.gender,
+          gender: formData.gender,
           utype: formData.utype,
           company: formData.company,
-          Companyaddress: formData.companyAddress,
+          companyAddress: formData.companyAddress,
         },
       }).unwrap();
       if (data.success && data.data) {

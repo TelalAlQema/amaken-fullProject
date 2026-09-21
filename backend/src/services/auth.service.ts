@@ -280,7 +280,7 @@ export async function resetPassword(email: string, resetToken: string, newPasswo
   otpStore.delete(key);
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
-  const now = new Date();
+  const now = new Date().toISOString();
 
   await prisma.user.updateMany({
     where: { uemail: normalizedEmail },

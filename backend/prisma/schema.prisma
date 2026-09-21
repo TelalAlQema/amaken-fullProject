@@ -11,109 +11,6 @@ datasource db {
 }
 
 // ============================================================
-// ENUMS
-// ============================================================
-
-enum UserType {
-  User
-  Agent
-  Builder
-}
-
-enum Gender {
-  Male
-  Female
-  Other
-}
-
-enum PropertyType {
-  Villa
-  Apartment
-  Town_House
-  Pent_House
-  Compound
-  Duplex
-  Full_Floor
-  Half_Floor
-  Building
-  Bulk_Sale_Unit
-  Bungalow
-  Office
-  Shop
-  Mall
-  Hotel
-  Hotel_Apartment_or_Flat
-  Restaurant
-  Warehouse
-  Bedspace
-  Partition
-  Others
-}
-
-enum SellingType {
-  rent
-  sale
-  lease
-}
-
-enum BHK {
-  Open
-  One_BHK
-  Two_BHK
-  Three_BHK
-  Four_BHK
-  Five_BHK
-  One_Two_BHK
-  Two_Three_BHK
-  Two_Three_Four_BHK
-  Two_Three_Four_Five_BHK
-  Two_Three_Four_Five_Six_BHK
-}
-
-enum PropertyStatus {
-  available
-  sold_out
-}
-
-enum PlanType {
-  Off_Plan
-  Secondary
-  Ready_to_Move
-}
-
-enum DecorationType {
-  Furnished
-  Unfurnished
-  Partially_Furnished
-}
-
-enum Currency {
-  AED
-  USD
-  EUR
-  GBP
-  SAR
-  PKR
-  INR
-}
-
-enum DelAccountType {
-  delete
-  block
-  deactivate
-}
-
-enum DelAccountUserType {
-  user
-  admin
-}
-
-enum TeamType {
-  leader
-  Team
-}
-
-// ============================================================
 // MODELS
 // ============================================================
 
@@ -124,7 +21,7 @@ model User {
   uemail        String    @unique @db.VarChar(255)
   uphone        String    @db.VarChar(100)
   upass         String    @db.VarChar(255)
-  utype         UserType  @default(User)
+  utype         String    @default("User") @db.VarChar(100)
   uimage        String    @default("") @db.VarChar(255)
   date          String    @db.VarChar(50)
   dateofbirth   String?   @db.VarChar(50)
@@ -135,7 +32,7 @@ model User {
   state         String?   @db.VarChar(255)
   city          String?   @db.VarChar(255)
   Companyaddress String?  @db.VarChar(500)
-  ugender       Gender?
+  ugender       String?   @db.VarChar(100)
   uloginvalue   Int       @default(0)
   wphone        String?   @db.VarChar(100)
   fb            String?   @db.VarChar(500)
@@ -145,12 +42,14 @@ model User {
   twitter       String?   @db.VarChar(500)
   website       String?   @db.VarChar(500)
   adminblock    Int       @default(0)
-  editprofile   DateTime?
-  editcomlogo   DateTime?
-  editpropic    DateTime?
-  linkpagedate  DateTime?
-  lastseen      DateTime?
-  udate         DateTime?
+  blocked       String    @default("") @db.VarChar(100)
+  linkweb       String    @default("") @db.VarChar(100)
+  editprofile   String    @default("") @db.VarChar(100)
+  editcomlogo   String    @default("") @db.VarChar(100)
+  editpropic    String    @default("") @db.VarChar(100)
+  linkpagedate  String    @default("") @db.VarChar(100)
+  lastseen      String    @default("") @db.VarChar(100)
+  udate         String    @default("") @db.VarChar(100)
 
   // Relations
   properties    Property[]     @relation("UserProperties")
@@ -167,28 +66,34 @@ model Admin {
   atype            String   @db.VarChar(50)
   aimage           String   @default("") @db.VarChar(255)
   joinadate        String   @db.VarChar(50)
+  audate           String   @default("") @db.VarChar(100)
   adateofbirth     String?  @db.VarChar(50)
   alname           String   @db.VarChar(255)
   aAddress         String?  @db.VarChar(500)
   awphone          String?  @db.VarChar(100)
+  aeditprofile     String   @default("") @db.VarChar(100)
   adeactivate      Int      @default(0)
   agency           String?  @db.VarChar(255)
   companylogo      String?  @db.VarChar(255)
-  companywebsite   String?  @db.VarChar(500)
+  website          String?  @map("companywebsite") @db.VarChar(500)
   afb              String?  @db.VarChar(500)
   ainstagram       String?  @db.VarChar(500)
   atwitter         String?  @db.VarChar(500)
   atiktok          String?  @db.VarChar(500)
   alinkedin        String?  @db.VarChar(500)
+  aeditpropic      String   @default("") @db.VarChar(100)
+  aeditcomlogo     String   @default("") @db.VarChar(100)
   astate           String?  @db.VarChar(255)
   acity            String?  @db.VarChar(255)
   acompanyAddress  String?  @db.VarChar(500)
-  agender          Gender?
+  alinkpagedate    String   @default("") @db.VarChar(100)
+  agender          String?  @db.VarChar(100)
   onlinetime       String?  @db.VarChar(50)
   aloginvalue      Int      @default(0)
   adminblock       Int      @default(0)
-  main             String?  @db.VarChar(255)
-  website          String?  @db.VarChar(500)
+  main             String   @default("") @db.VarChar(255)
+  is_logged_in     Boolean? @default(false)
+  last_session_id  String?  @db.VarChar(255)
 
   // Relations
   properties       Property[]     @relation("AdminProperties")
@@ -202,9 +107,9 @@ model Property {
   date            String          @db.VarChar(50)
   title           String          @db.VarChar(191)
   pcontent        String?         @db.Text
-  type            PropertyType
-  bhk             BHK
-  stype           SellingType
+  type            String          @db.VarChar(100)
+  bhk             String          @db.VarChar(100)
+  stype           String          @db.VarChar(100)
   bedroom         String          @default("") @db.VarChar(50)
   bathroom        String          @default("") @db.VarChar(50)
   balcony         String          @default("") @db.VarChar(50)
@@ -222,17 +127,17 @@ model Property {
   pimage3         String          @default("") @db.VarChar(255)
   pimage4         String          @default("") @db.VarChar(255)
   uid             Int
-  status          PropertyStatus  @default(available)
+  status          String          @default("available") @db.VarChar(100)
   mapimage        String          @default("") @db.VarChar(255)
   topmapimage     String          @default("") @db.VarChar(255)
   groundmapimage  String          @default("") @db.VarChar(255)
   totalfloor      String          @default("") @db.VarChar(100)
   isFeatured      Int             @default(0)
   offer           Int             @default(0)
-  plan            PlanType        @default(Secondary)
+  plan            String          @default("Secondary") @db.VarChar(100)
   saleid          Int             @default(0)
-  decoration      DecorationType  @default(Unfurnished)
-  curr            Currency        @default(AED)
+  decoration      String          @default("Unfurnished") @db.VarChar(100)
+  curr            String          @default("AED") @db.VarChar(10)
   feature         String?         @db.Text
   deactivate      Int             @default(1)
   adminapproval   Int             @default(0)
@@ -285,8 +190,8 @@ model PropertyLead {
 model DelAccount {
   id    Int               @id @default(autoincrement())
   email String            @db.VarChar(255)
-  type  DelAccountType
-  utype DelAccountUserType
+  type  String            @db.VarChar(100)
+  utype String            @db.VarChar(100)
   date  DateTime          @default(now())
 
   @@index([email])
@@ -358,7 +263,7 @@ model TeamMember {
   wnumber  String   @db.VarChar(100)
   pnumber  String   @db.VarChar(100)
   about    String   @db.Text
-  type     TeamType
+  type     String   @db.VarChar(100)
   fb       String?  @db.VarChar(500)
   ig       String?  @db.VarChar(500)
   linkdin  String?  @db.VarChar(500)
@@ -385,6 +290,7 @@ model RegisterEmail {
   utype  String @db.VarChar(50)
 
   @@index([email])
+  @@map("register_email")
 }
 
 model AdminSocial {

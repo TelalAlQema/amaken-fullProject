@@ -14,18 +14,13 @@ export default function RegisterPage() {
   
 
 useEffect(() => {
-  const storedEmail = sessionStorage.getItem("reg_email") || "";
-  setEmail(storedEmail);
+    const storedEmail = sessionStorage.getItem("reg_email") || "";
+    setEmail(storedEmail);
 
-  if (!storedEmail) {
-    router.push("/verify-email");
-  }
-}, [router]);
-  // const email = sessionStorage.getItem("reg_email") || "";
-
-  useEffect(() => {
-    if (!email) router.push("/verify-email");
-  }, [email, router]);
+    if (!storedEmail) {
+      router.push("/verify-email");
+    }
+  }, [router]);
 
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
@@ -78,16 +73,16 @@ useEffect(() => {
         phone: formData.phone,
         password: formData.password,
         utype: formData.utype,
-        dateofbirth: formData.date,
+        dateOfBirth: formData.date || null,
         Address: formData.Address,
         city: formData.city,
         state: formData.state,
-        ugender: formData.gender,
+        gender: formData.gender,
         wphone: formData.wphone,
         company: formData.company,
-        Companyaddress: formData.companyAddress,
+        companyAddress: formData.companyAddress,
         website: formData.website,
-        facebook: formData.facebook,
+        fb: formData.facebook,
         linkedin: formData.linkedin,
         instagram: formData.instagram,
         tiktok: formData.tiktok,

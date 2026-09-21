@@ -29,8 +29,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     {
       skip:
         typeof window === "undefined" ||
-        (!localStorage.getItem("admin_access_token") &&
-          !localStorage.getItem("access_token")),
+        !localStorage.getItem("admin_access_token"),
     }
   );
 
@@ -47,8 +46,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       if (payload?.data) {
         localStorage.setItem("admin_access_token", payload.data.accessToken);
         localStorage.setItem("admin_refresh_token", payload.data.refreshToken);
-        localStorage.setItem("access_token", payload.data.accessToken);
-        localStorage.setItem("refresh_token", payload.data.refreshToken);
         localStorage.setItem("admin_pin_verified", "true");
         setAdmin(payload.data.admin);
         return;
@@ -63,8 +60,6 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("admin_access_token");
     localStorage.removeItem("admin_refresh_token");
     localStorage.removeItem("admin_pin_verified");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
     setAdmin(null);
     router.push("/admin/login");
   }, [router]);
