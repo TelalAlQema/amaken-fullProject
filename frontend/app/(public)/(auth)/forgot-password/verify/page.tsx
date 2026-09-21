@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authVerifyForgotOtp } from "@/lib/api";
+import { useAuthVerifyForgotOtpMutation, useAuthForgotPasswordMutation } from "@/lib/redux/api";
 
 export default function ForgotPasswordVerifyPage() {
   const searchParams = useSearchParams();
@@ -14,6 +14,8 @@ export default function ForgotPasswordVerifyPage() {
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const router = useRouter();
+  const [authVerifyForgotOtp] = useAuthVerifyForgotOtpMutation();
+  const [authForgotPassword] = useAuthForgotPasswordMutation();
 
   useEffect(() => {
     if (timer <= 0) {
@@ -58,7 +60,7 @@ export default function ForgotPasswordVerifyPage() {
     setError("");
     setLoading(true);
     try {
-      const { data } = await authVerifyForgotOtp(email, code);
+      const data = await authVerifyForgotOtp({ email, code }).unwrap();
       if (data.success && data.data?.resetToken) {
         sessionStorage.setItem("reset_token", data.data.resetToken);
         sessionStorage.setItem("reset_email", email);
@@ -68,7 +70,7 @@ export default function ForgotPasswordVerifyPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Invalid or expired OTP";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Invalid or expired OTP";
       setError(msg);
     } finally {
       setLoading(false);
@@ -80,11 +82,11 @@ export default function ForgotPasswordVerifyPage() {
     setTimer(30);
     setError("");
     try {
-      await (await import("@/lib/api")).authForgotPassword(email);
+      await authForgotPassword({ email }).unwrap();
     } catch {
       setError("Failed to resend OTP");
     }
-  }, [email]);
+  }, [email, authForgotPassword]);
 
   if (!email) {
     return (

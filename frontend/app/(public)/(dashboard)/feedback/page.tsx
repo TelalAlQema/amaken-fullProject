@@ -1,35 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getMyFeedback, deleteFeedback } from "@/lib/api";
+import { useGetMyFeedbackQuery, useDeleteFeedbackMutation } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
 export default function MyFeedbackPage() {
   const { user } = useAuth();
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useGetMyFeedbackQuery();
+  const [deleteFeedback] = useDeleteFeedbackMutation();
 
-  const fetchFeedback = async () => {
-    setLoading(true);
-    try {
-      const { data } = await getMyFeedback();
-      if (data.success && data.data) {
-        setFeedback(data.data as Feedback[]);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchFeedback(); }, []);
+  const feedback = (data?.success ? data.data : []) as Feedback[];
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this feedback?")) return;
     try {
-      await deleteFeedback(id);
-      fetchFeedback();
+      await deleteFeedback(id).unwrap();
     } catch {
       alert("Failed to delete feedback");
     }
@@ -44,7 +30,7 @@ export default function MyFeedbackPage() {
         Feedback with status &quot;Approved&quot; will appear on testimonials.
       </p>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-12 text-center text-amaken-gray">Loading...</div>
       ) : feedback.length === 0 ? (
         <div className="py-12 text-center text-amaken-gray">

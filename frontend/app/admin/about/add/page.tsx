@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { adminCreateAbout } from "@/lib/admin-api";
+import { useAdminCreateAboutMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
@@ -26,14 +25,13 @@ export default function AddAboutPage() {
     }
   };
 
-  const mutation = useMutation({
-    mutationFn: () =>
-      adminCreateAbout(
-        { title: title || undefined, content },
-        file ?? undefined
-      ),
-    onSuccess: () => router.push("/admin/about"),
-  });
+  const [mutation, mutationState] = useAdminCreateAboutMutation();
+
+  const handleSubmit = () => {
+    mutation({ data: { title: title || undefined, content }, file: file ?? undefined })
+      .unwrap()
+      .then(() => router.push("/admin/about"));
+  };
 
   return (
     <div className="bg-gray-50 p-6 min-h-screen">
@@ -113,12 +111,12 @@ export default function AddAboutPage() {
 
           <div className="flex items-center gap-3 border-t border-gray-100 pt-6">
             <button
-              onClick={() => mutation.mutate()}
-              disabled={!content || mutation.isPending}
+              onClick={handleSubmit}
+              disabled={!content || mutationState.isLoading}
               className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
-              {mutation.isPending ? "Creating..." : "Create About Content"}
+              {mutationState.isLoading ? "Creating..." : "Create About Content"}
             </button>
             <Link
               href="/admin/about"
@@ -128,7 +126,7 @@ export default function AddAboutPage() {
             </Link>
           </div>
 
-          {mutation.isError && (
+          {mutationState.isError && (
             <p className="text-sm text-red-600">
               Failed to create about content. Please try again.
             </p>

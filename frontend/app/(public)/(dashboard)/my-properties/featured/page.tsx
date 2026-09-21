@@ -1,29 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { api } from "@/lib/api";
+import { useGetMyPropertiesQuery } from "@/lib/redux/api";
 import type { Property } from "@amaken/shared";
 
 export default function FeaturedPropertiesPage() {
   const { user } = useAuth();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useGetMyPropertiesQuery({ isFeatured: 1 });
 
-  useEffect(() => {
-    async function fetchFeatured() {
-      try {
-        const { data } = await api.get("/properties/my", { params: { isFeatured: 1 } });
-        if (data.success && data.data) {
-          setProperties(data.data as Property[]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchFeatured();
-  }, []);
+  const properties = (data?.success ? data.data : []) as Property[];
 
   if (!user) return null;
 
@@ -35,7 +21,7 @@ export default function FeaturedPropertiesPage() {
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-md">
-          {loading ? (
+          {isLoading ? (
             <div className="py-12 text-center text-amaken-gray">Loading...</div>
           ) : properties.length === 0 ? (
             <div className="py-12 text-center text-amaken-gray">

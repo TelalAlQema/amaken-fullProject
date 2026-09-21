@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { getProperties, getAboutContent, getTeamMembers } from "@/lib/api";
+import { useGetPropertiesQuery, useGetAboutContentQuery } from "@/lib/redux/api";
 import PropertyCard from "@/components/shared/PropertyCard";
 import HeroSearch from "@/components/shared/HeroSearch";
 import { PropertyCardSkeleton } from "@/components/shared/Skeletons";
@@ -45,8 +44,9 @@ const jsonLd = {
   logo: "https://amaken-realestate.com/images/logo/amaken.png",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Al Reem Tower",
+    streetAddress: "Al Reem Tower, Office 1301",
     addressLocality: "Dubai",
+    addressRegion: "Dubai",
     addressCountry: "AE",
   },
   telephone: "+971558965353",
@@ -61,35 +61,20 @@ const jsonLd = {
 };
 
 export default function HomePage() {
-  const { data: offPlanData, isLoading: offPlanLoading } = useQuery({
-    queryKey: ["properties", "offplan", "home"],
-    queryFn: () => getProperties({ plan: "Off Plan", limit: 6, page: 1 }),
-  });
+  const { data: offPlanData, isLoading: offPlanLoading } = useGetPropertiesQuery({ plan: "Off Plan", limit: 6, page: 1 });
 
-  const { data: offerData, isLoading: offerLoading } = useQuery({
-    queryKey: ["properties", "offer", "home"],
-    queryFn: () => getProperties({ offer: "1", limit: 4, page: 1 }),
-  });
+  const { data: offerData, isLoading: offerLoading } = useGetPropertiesQuery({ offer: "1", limit: 4, page: 1 });
 
-  const { data: recentData, isLoading: recentLoading } = useQuery({
-    queryKey: ["properties", "recent", "home"],
-    queryFn: () => getProperties({ limit: 6, page: 1, sort: "newest" }),
-  });
+  const { data: recentData, isLoading: recentLoading } = useGetPropertiesQuery({ limit: 6, page: 1, sort: "newest" });
 
-  const { data: aboutData } = useQuery({
-    queryKey: ["about"],
-    queryFn: () => getAboutContent(),
-  });
+  const { data: aboutData } = useGetAboutContentQuery();
 
-  const { data: feedbackData } = useQuery({
-    queryKey: ["feedback", "home"],
-    queryFn: () => getProperties({ limit: 5, page: 1 }),
-  });
+  const { data: feedbackData } = useGetPropertiesQuery({ limit: 5, page: 1 });
 
-  const offPlanProperties: Property[] = offPlanData?.data?.data || [];
-  const offerProperties: Property[] = offerData?.data?.data || [];
-  const recentProperties: Property[] = recentData?.data?.data || [];
-  const aboutContent: About[] = aboutData?.data?.data || [];
+  const offPlanProperties: Property[] = offPlanData?.data || [];
+  const offerProperties: Property[] = offerData?.data || [];
+  const recentProperties: Property[] = recentData?.data || [];
+  const aboutContent: About[] = aboutData?.data || [];
 
   return (
     <>

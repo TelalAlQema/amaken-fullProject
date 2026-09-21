@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authResetPassword } from "@/lib/api";
+import { useAuthResetPasswordMutation } from "@/lib/redux/api";
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [resetToken, setResetToken] = useState("");
   const router = useRouter();
+  const [authResetPassword] = useAuthResetPasswordMutation();
 
  
 
@@ -50,7 +51,7 @@ useEffect(() => {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await authResetPassword(email, resetToken, password);
+      const data = await authResetPassword({ email, resetToken, password }).unwrap();
       if (data.success) {
         sessionStorage.removeItem("reset_email");
         sessionStorage.removeItem("reset_token");
@@ -61,7 +62,7 @@ useEffect(() => {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Failed to reset password";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Failed to reset password";
       setError(msg);
     } finally {
       setLoading(false);

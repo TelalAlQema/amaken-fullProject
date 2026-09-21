@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
-import { getAdminProfile, updateAdminProfile } from "@/lib/admin-api";
+import {
+  useGetAdminProfileQuery,
+  useUpdateAdminProfileMutation,
+} from "@/lib/redux/adminApi";
 import type { Admin } from "@amaken/shared";
 import { Save, ArrowLeft } from "lucide-react";
 
@@ -33,13 +35,8 @@ export default function AdminEditProfilePage() {
     alinkedin: "",
   });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-profile"],
-    queryFn: async () => {
-      const { data } = await getAdminProfile();
-      return data.success ? (data.data as Admin) : null;
-    },
-  });
+  const { data: response, isLoading } = useGetAdminProfileQuery();
+  const data = response?.data ?? null;
 
   useEffect(() => {
     if (data) {
@@ -64,22 +61,7 @@ export default function AdminEditProfilePage() {
     }
   }, [data]);
 
-  const mutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>) => updateAdminProfile(payload),
-    onSuccess: (res) => {
-      if (res.data.success && res.data.data) {
-        setAdmin(res.data.data as Admin);
-        setSuccess("Profile updated successfully");
-        setError("");
-      }
-    },
-    onError: (err: Error & { response?: { data?: { error?: { message?: string } } } }) => {
-      const msg =
-        err.response?.data?.error?.message || err.message || "Update failed";
-      setError(msg);
-      setSuccess("");
-    },
-  });
+  const [mutation, mutationState] = useUpdateAdminProfileMutation();
 
   const update = (field: string, value: string) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -88,7 +70,21 @@ export default function AdminEditProfilePage() {
     e.preventDefault();
     setError("");
     setSuccess("");
-    mutation.mutate(formData);
+    mutation(formData)
+      .unwrap()
+      .then((res) => {
+        if (res.success && res.data) {
+          setAdmin(res.data as Admin);
+          setSuccess("Profile updated successfully");
+          setError("");
+        }
+      })
+      .catch((err) => {
+        const msg =
+          err?.data?.error?.message || err?.message || "Update failed";
+        setError(msg);
+        setSuccess("");
+      });
   };
 
   if (isLoading) {
@@ -209,11 +205,11 @@ export default function AdminEditProfilePage() {
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutationState.isLoading}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {mutation.isPending ? "Saving..." : "Save Changes"}
+            {mutationState.isLoading ? "Saving..." : "Save Changes"}
           </button>
           <Link
             href="/admin/profile"

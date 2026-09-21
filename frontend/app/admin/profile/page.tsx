@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useGetAdminProfileQuery } from "@/lib/redux/adminApi";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
-import { getAdminProfile } from "@/lib/admin-api";
 import type { Admin } from "@amaken/shared";
 import {
   User,
@@ -22,14 +21,8 @@ import {
 export default function AdminProfilePage() {
   const { admin } = useAdminAuth();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-profile"],
-    queryFn: async () => {
-      const { data } = await getAdminProfile();
-      return data.success ? (data.data as Admin) : null;
-    },
-    initialData: admin as Admin | null,
-  });
+  const { data: response, isLoading } = useGetAdminProfileQuery();
+  const data = response?.data ?? admin;
 
   if (isLoading || !data) {
     return (

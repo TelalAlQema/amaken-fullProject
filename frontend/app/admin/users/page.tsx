@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminUserStatus, adminDeleteUser } from "@/lib/admin-api";
-import type { User, ApiResponse } from "@amaken/shared";
+import {
+  useListAdminUsersQuery,
+  useAdminUserStatusMutation,
+  useAdminDeleteUserMutation,
+} from "@/lib/redux/adminApi";
+import type { User } from "@amaken/shared";
 import {
   Search,
   ChevronLeft,
@@ -103,7 +105,6 @@ function ConfirmDialog({
 }
 
 export default function AdminUsersPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
@@ -116,33 +117,17 @@ export default function AdminUsersPage() {
     danger?: boolean;
   } | null>(null);
 
-  const { data: response, isLoading } = useQuery<ApiResponse<UsersResponse>>({
-    queryKey: ["admin-users", page],
-    queryFn: () =>
-      api
-        .get("/admin/users", { params: { page, limit: 50 } })
-        .then((r) => r.data),
+  const { data: response, isLoading } = useListAdminUsersQuery({
+    page,
+    limit: 50,
   });
 
-  const statusMutation = useMutation({
-    mutationFn: ({ id, action }: { id: number; action: string }) =>
-      adminUserStatus(id, action),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      setConfirmAction(null);
-    },
-  });
+  const [statusMutation, statusState] = useAdminUserStatusMutation();
+  const [deleteMutation, deleteState] = useAdminDeleteUserMutation();
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteUser(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-      setConfirmAction(null);
-    },
-  });
-
-  const items: User[] = response?.data?.items ?? [];
-  const pagination = response?.data?.pagination;
+  const responseData = response?.data as unknown as UsersResponse | undefined;
+  const items: User[] = responseData?.items ?? [];
+  const pagination = responseData?.pagination;
   const total = pagination?.total ?? 0;
 
   const filtered = items.filter((u) => {
@@ -198,12 +183,16 @@ export default function AdminUsersPage() {
   const executeConfirm = () => {
     if (!confirmAction) return;
     if (confirmAction.action === "delete") {
-      deleteMutation.mutate(confirmAction.userId);
+      deleteMutation(confirmAction.userId)
+        .unwrap()
+        .then(() => setConfirmAction(null));
     } else {
-      statusMutation.mutate({
+      statusMutation({
         id: confirmAction.userId,
         action: confirmAction.action,
-      });
+      })
+        .unwrap()
+        .then(() => setConfirmAction(null));
     }
   };
 

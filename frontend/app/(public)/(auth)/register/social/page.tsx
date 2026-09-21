@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authRegister } from "@/lib/api";
+import { useAuthRegisterMutation } from "@/lib/redux/api";
 
 export default function SocialRegisterPage() {
    const [email, setEmail] = useState("");
   const [regData, setRegData] = useState("");
   const router = useRouter();
+  const [authRegister] = useAuthRegisterMutation();
   // const email = sessionStorage.getItem("reg_email") || "";
  
 
@@ -58,12 +59,12 @@ useEffect(() => {
     setError("");
     setLoading(true);
     try {
-      const data = JSON.parse(regData);
-      const { data: result } = await authRegister({
-        ...data,
+      const parsedData = JSON.parse(regData);
+      const result = await authRegister({
+        ...parsedData,
         email,
         ...Object.fromEntries(Object.entries(formData).filter(([, v]) => v)),
-      });
+      }).unwrap();
       if (result.success && result.data) {
         localStorage.setItem("access_token", result.data.accessToken);
         localStorage.setItem("refresh_token", result.data.refreshToken);
@@ -75,7 +76,7 @@ useEffect(() => {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Registration failed";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Registration failed";
       setError(msg);
     } finally {
       setLoading(false);

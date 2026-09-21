@@ -1,10 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getProperties } from "@/lib/api";
+import { useGetPropertiesQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import PropertyCard from "@/components/shared/PropertyCard";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
@@ -15,13 +14,9 @@ export default function AgentDetailPage() {
   const params = useParams();
   const agentEmail = params.id as string;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["properties", "agent", agentEmail],
-    queryFn: () => getProperties({ limit: 50, page: 1 }),
-    enabled: !!agentEmail,
-  });
+  const { data, isLoading } = useGetPropertiesQuery({ limit: 50, page: 1 });
 
-  const allProperties: Property[] = data?.data?.data || [];
+  const allProperties: Property[] = data?.data || [];
   const agentProperties = allProperties.filter(
     (p) => p.aemail === decodeURIComponent(agentEmail) || p.email === decodeURIComponent(agentEmail)
   );

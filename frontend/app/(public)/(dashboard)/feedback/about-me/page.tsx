@@ -1,26 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getFeedbackAboutMe } from "@/lib/api";
+import { useGetFeedbackAboutMeQuery } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
 export default function FeedbackAboutMePage() {
   const { user } = useAuth();
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useGetFeedbackAboutMeQuery();
 
-  useEffect(() => {
-    async function fetch() {
-      try {
-        const { data } = await getFeedbackAboutMe();
-        if (data.success && data.data) setFeedback(data.data as Feedback[]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetch();
-  }, []);
+  const feedback = (data?.success ? data.data : []) as Feedback[];
 
   if (!user) return null;
 
@@ -31,7 +19,7 @@ export default function FeedbackAboutMePage() {
         Reviews and feedback that others have left about you.
       </p>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-12 text-center text-amaken-gray">Loading...</div>
       ) : feedback.length === 0 ? (
         <div className="py-12 text-center text-amaken-gray">No feedback received yet.</div>

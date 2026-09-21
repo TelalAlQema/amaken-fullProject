@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authVerifyOtp } from "@/lib/api";
+import { useAuthVerifyOtpMutation, useAuthVerifyEmailMutation } from "@/lib/redux/api";
 
 export default function VerifyOtpPage() {
   const searchParams = useSearchParams();
@@ -14,6 +14,8 @@ export default function VerifyOtpPage() {
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const router = useRouter();
+  const [authVerifyOtp] = useAuthVerifyOtpMutation();
+  const [authVerifyEmail] = useAuthVerifyEmailMutation();
 
   useEffect(() => {
     if (timer <= 0) {
@@ -61,7 +63,7 @@ export default function VerifyOtpPage() {
     setError("");
     setLoading(true);
     try {
-      const { data } = await authVerifyOtp(email, code);
+      const data = await authVerifyOtp({ email, code }).unwrap();
       if (data.success) {
         sessionStorage.setItem("reg_email", email);
         router.push("/register");
@@ -70,7 +72,7 @@ export default function VerifyOtpPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Invalid OTP code";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Invalid OTP code";
       setError(msg);
     } finally {
       setLoading(false);
@@ -82,11 +84,11 @@ export default function VerifyOtpPage() {
     setTimer(30);
     setError("");
     try {
-      await (await import("@/lib/api")).authVerifyEmail(email);
+      await authVerifyEmail({ email }).unwrap();
     } catch {
       setError("Failed to resend OTP");
     }
-  }, [email]);
+  }, [email, authVerifyEmail]);
 
   if (!email) {
     return (

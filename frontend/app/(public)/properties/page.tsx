@@ -1,9 +1,8 @@
 "use client";
 
 import { Suspense, useState, useMemo, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getProperties } from "@/lib/api";
+import { useGetPropertiesQuery } from "@/lib/redux/api";
 import PropertyCard from "@/components/shared/PropertyCard";
 import Pagination from "@/components/shared/Pagination";
 import EmptyState from "@/components/shared/EmptyState";
@@ -44,13 +43,10 @@ function PropertiesContent() {
     return params;
   }, [filters, page]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["properties", "list", queryParams],
-    queryFn: () => getProperties(queryParams),
-  });
+  const { data, isLoading } = useGetPropertiesQuery(queryParams);
 
-  const properties: Property[] = data?.data?.data || [];
-  const pagination = data?.data?.pagination;
+  const properties: Property[] = data?.data || [];
+  const pagination = data?.pagination;
 
   const updateFilter = useCallback((key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

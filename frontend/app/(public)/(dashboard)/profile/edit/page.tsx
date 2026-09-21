@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { updateMe } from "@/lib/api";
+import { useUpdateMeMutation } from "@/lib/redux/api";
 import { USER_TYPES, GENDERS } from "@amaken/shared";
 
 export default function EditProfilePage() {
@@ -12,6 +12,7 @@ export default function EditProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [updateMe] = useUpdateMeMutation();
   const [formData, setFormData] = useState({
     fname: "",
     lname: "",
@@ -51,18 +52,20 @@ export default function EditProfilePage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await updateMe({
-        uname: formData.fname,
-        lname: formData.lname,
-        dateofbirth: formData.date,
-        uphone: formData.phone,
-        wphone: formData.wphone,
-        Address: formData.Address,
-        ugender: formData.gender,
-        utype: formData.utype,
-        company: formData.company,
-        Companyaddress: formData.companyAddress,
-      });
+      const data = await updateMe({
+        data: {
+          uname: formData.fname,
+          lname: formData.lname,
+          dateofbirth: formData.date,
+          uphone: formData.phone,
+          wphone: formData.wphone,
+          Address: formData.Address,
+          ugender: formData.gender,
+          utype: formData.utype,
+          company: formData.company,
+          Companyaddress: formData.companyAddress,
+        },
+      }).unwrap();
       if (data.success && data.data) {
         setUser(data.data);
         setSuccess("Profile updated successfully");
@@ -71,7 +74,7 @@ export default function EditProfilePage() {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Update failed";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Update failed";
       setError(msg);
     } finally {
       setLoading(false);

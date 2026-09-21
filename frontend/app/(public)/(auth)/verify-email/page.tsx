@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authVerifyEmail } from "@/lib/api";
+import { useAuthVerifyEmailMutation } from "@/lib/redux/api";
 
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +11,7 @@ export default function VerifyEmailPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [authVerifyEmail] = useAuthVerifyEmailMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ export default function VerifyEmailPage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await authVerifyEmail(email);
+      const data = await authVerifyEmail({ email }).unwrap();
       if (data.success) {
         sessionStorage.setItem("reg_email", email);
         setSuccess("OTP has been sent to your email");
@@ -30,7 +31,7 @@ export default function VerifyEmailPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Failed to send OTP";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Failed to send OTP";
       setError(msg);
     } finally {
       setLoading(false);

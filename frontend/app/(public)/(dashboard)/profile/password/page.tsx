@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { changePassword } from "@/lib/api";
+import { useChangePasswordMutation } from "@/lib/redux/api";
 
 export default function ChangePasswordPage() {
   const { user } = useAuth();
@@ -16,6 +16,7 @@ export default function ChangePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [changePassword] = useChangePasswordMutation();
 
   const checks = {
     length: newPassword.length >= 8 && newPassword.length <= 16,
@@ -32,7 +33,7 @@ export default function ChangePasswordPage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await changePassword(currentPassword, newPassword);
+      const data = await changePassword({ currentPassword, newPassword }).unwrap();
       if (data.success) {
         setSuccess("Password changed successfully");
         setCurrentPassword("");

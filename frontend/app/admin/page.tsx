@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {
+  useGetDashboardStatsQuery,
+  useGetDashboardChartsQuery,
+} from "@/lib/redux/adminApi";
 import {
   Users,
   Home,
@@ -115,18 +117,13 @@ function StatCard({ title, value, icon, iconBg }: StatCardProps) {
 }
 
 export default function AdminDashboardPage() {
-  const { data: statsData, isLoading: statsLoading } = useQuery<StatsData>({
-    queryKey: ["admin-stats"],
-    queryFn: () =>
-      api.get("/admin/dashboard/stats").then((r) => r.data.data),
-  });
+  const { data: statsResponse, isLoading: statsLoading } =
+    useGetDashboardStatsQuery();
+  const statsData: StatsData | undefined = statsResponse?.data as StatsData;
 
-  const { data: chartData, isLoading: chartLoading } =
-    useQuery<ChartDataResponse>({
-      queryKey: ["admin-charts"],
-      queryFn: () =>
-        api.get("/admin/dashboard/charts").then((r) => r.data.data),
-    });
+  const { data: chartResponse, isLoading: chartLoading } =
+    useGetDashboardChartsQuery({});
+  const chartData: ChartDataResponse | undefined = chartResponse?.data as ChartDataResponse;
 
   const isLoading = statsLoading || chartLoading;
 

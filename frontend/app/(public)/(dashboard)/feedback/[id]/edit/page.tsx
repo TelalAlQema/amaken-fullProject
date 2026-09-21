@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getFeedback, updateFeedback } from "@/lib/api";
+import { useGetFeedbackQuery, useUpdateFeedbackMutation } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
 export default function EditFeedbackPage() {
@@ -11,30 +11,23 @@ export default function EditFeedbackPage() {
   const params = useParams();
   const router = useRouter();
   const id = Number(params.id);
-  const [fb, setFb] = useState<Feedback | null>(null);
+  const { data: fbData, isLoading } = useGetFeedbackQuery(id, { skip: !id });
+  const [updateFeedback] = useUpdateFeedbackMutation();
+
+  const fb = (fbData?.success ? fbData.data : null) as Feedback | null;
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    async function fetch() {
-      try {
-        const { data } = await getFeedback(id);
-        if (data.success && data.data) {
-          setFb(data.data as Feedback);
-          setContent((data.data as Feedback).fdescription);
-          setRating((data.data as Feedback).rating);
-        }
-      } finally {
-        setLoading(false);
-      }
+    if (fb) {
+      setContent(fb.fdescription);
+      setRating(fb.rating);
     }
-    if (id) fetch();
-  }, [id]);
+  }, [fb]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +38,7 @@ export default function EditFeedbackPage() {
     setError("");
     setSaving(true);
     try {
-      const { data } = await updateFeedback(id, { fdescription: content, rating });
+      const data = await updateFeedback({ id, fdescription: content, rating }).unwrap();
       if (data.success) {
         setSuccess("Feedback updated successfully");
         setTimeout(() => router.push("/feedback"), 1500);
@@ -63,7 +56,7 @@ export default function EditFeedbackPage() {
     <div className="rounded-lg bg-white p-6 shadow-md">
       <h2 className="mb-6 font-heading text-xl font-bold text-navy">Edit Feedback</h2>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-12 text-center text-amaken-gray">Loading...</div>
       ) : !fb ? (
         <div className="py-12 text-center text-amaken-gray">Feedback not found.</div>

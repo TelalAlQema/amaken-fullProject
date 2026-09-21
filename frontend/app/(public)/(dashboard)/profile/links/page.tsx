@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { updateSocialLinks } from "@/lib/api";
+import { useUpdateSocialLinksMutation } from "@/lib/redux/api";
 
 export default function SocialLinksPage() {
   const { user, setUser } = useAuth();
@@ -19,6 +19,7 @@ export default function SocialLinksPage() {
     tiktok: "",
     twitter: "",
   });
+  const [updateSocialLinks] = useUpdateSocialLinksMutation();
 
   useEffect(() => {
     if (user) {
@@ -42,7 +43,7 @@ export default function SocialLinksPage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await updateSocialLinks(links);
+      const data = await updateSocialLinks(links).unwrap();
       if (data.success) {
         setUser({
           ...user!,

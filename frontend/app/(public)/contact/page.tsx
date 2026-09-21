@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { submitContact } from "@/lib/api";
+import { useSubmitContactMutation } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import { CONTACT } from "@amaken/shared";
 
@@ -10,13 +9,7 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [success, setSuccess] = useState(false);
 
-  const mutation = useMutation({
-    mutationFn: submitContact,
-    onSuccess: () => {
-      setSuccess(true);
-      setForm({ name: "", email: "", phone: "", subject: "", message: "" });
-    },
-  });
+  const [submitContact, mutationState] = useSubmitContactMutation();
 
   return (
     <>
@@ -88,7 +81,12 @@ export default function ContactPage() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      mutation.mutate(form);
+                      submitContact(form)
+                        .unwrap()
+                        .then(() => {
+                          setSuccess(true);
+                          setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+                        });
                     }}
                     className="space-y-4"
                   >
@@ -152,12 +150,12 @@ export default function ContactPage() {
                     </div>
                     <button
                       type="submit"
-                      disabled={mutation.isPending}
+                      disabled={mutationState.isLoading}
                       className="btn-primary disabled:opacity-60"
                     >
-                      {mutation.isPending ? "Sending..." : "Send Message"}
+                      {mutationState.isLoading ? "Sending..." : "Send Message"}
                     </button>
-                    {mutation.isError && (
+                    {mutationState.isError && (
                       <p className="text-sm text-red-500">Failed to send message. Please try again.</p>
                     )}
                   </form>

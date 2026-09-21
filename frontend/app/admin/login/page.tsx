@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Shield } from "lucide-react";
 import Image from "next/image";
-import { adminVerifyPin } from "@/lib/admin-api";
+import { useAdminVerifyPinMutation } from "@/lib/redux/adminApi";
 
 export default function AdminPinPage() {
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [verifyPin, { isLoading }] = useAdminVerifyPinMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,20 +21,16 @@ export default function AdminPinPage() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const { data } = await adminVerifyPin(pin);
-      if (data.success) {
+      const result = await verifyPin({ pin }).unwrap();
+      if (result.success) {
         localStorage.setItem("admin_pin_verified", "true");
         router.push("/admin/login/email");
       } else {
-        setError(data.error?.message || "Invalid PIN. Please try again.");
+        setError(result.error?.message || "Invalid PIN. Please try again.");
       }
-      
     } catch {
       setError("Invalid PIN. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -43,7 +39,7 @@ export default function AdminPinPage() {
       <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
         <div className="flex flex-col items-center gap-4 mb-8">
           <Image
-            src="/images/logo/title.png"
+            src="/images/logo/amaken.png"
             alt="Amaken"
             width={80}
             height={80}

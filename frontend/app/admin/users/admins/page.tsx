@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import type { Admin, ApiResponse } from "@amaken/shared";
+import { useListAdminAdminsQuery } from "@/lib/redux/adminApi";
+import type { Admin } from "@amaken/shared";
 import {
   Search,
   Users,
@@ -17,11 +16,7 @@ import Link from "next/link";
 export default function AdminAdminsPage() {
   const [search, setSearch] = useState("");
 
-  const { data: response, isLoading } = useQuery<ApiResponse<Admin[]>>({
-    queryKey: ["admin-admins"],
-    queryFn: () =>
-      api.get("/admin/users/admins").then((r) => r.data),
-  });
+  const { data: response, isLoading } = useListAdminAdminsQuery();
 
   const items: Admin[] = response?.data ?? [];
   const total = items.length;

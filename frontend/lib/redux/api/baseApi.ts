@@ -1,0 +1,94 @@
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+const rawBaseQuery = fetchBaseQuery({
+  baseUrl: API_URL,
+  prepareHeaders: (headers) => {
+    if (typeof window !== "undefined") {
+      const token =
+        localStorage.getItem("access_token") ||
+        localStorage.getItem("admin_access_token");
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+    }
+    return headers;
+  },
+});
+
+const refreshAccessToken = async (): Promise<boolean> => {
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) return false;
+  try {
+    const res = await fetch(`${API_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+    const json = await res.json();
+    if (json.success && json.data) {
+      localStorage.setItem("access_token", json.data.accessToken);
+      localStorage.setItem("refresh_token", json.data.refreshToken);
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+};
+
+const clearTokens = () => {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error && result.error.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      result = await rawBaseQuery(args, api, extraOptions);
+    } else {
+      clearTokens();
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
+  }
+  return result;
+};
+
+export const baseApi = createApi({
+  reducerPath: "api",
+  baseQuery: baseQueryWithReauth,
+  tagTypes: [
+    "User",
+    "Admin",
+    "Property",
+    "MyProperty",
+    "Feedback",
+    "About",
+    "Team",
+    "State",
+    "City",
+    "Contact",
+    "Lead",
+    "Dashboard",
+    "AdminUser",
+    "AdminAccount",
+  ],
+  endpoints: () => ({}),
+});

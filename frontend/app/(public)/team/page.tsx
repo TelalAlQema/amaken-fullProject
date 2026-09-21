@@ -1,8 +1,7 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { getTeamMembers } from "@/lib/api";
+import { useGetTeamMembersQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
 import type { TeamMember } from "@amaken/shared";
@@ -51,12 +50,9 @@ function TeamCard({ member }: { member: TeamMember }) {
 }
 
 export default function TeamPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["team"],
-    queryFn: () => getTeamMembers(),
-  });
+  const { data, isLoading } = useGetTeamMembersQuery();
 
-  const members: TeamMember[] = data?.data?.data || [];
+  const members: TeamMember[] = data?.data || [];
   const leaders = members.filter((m) => m.type === "leader");
   const team = members.filter((m) => m.type !== "leader");
 

@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
-import { api } from "@/lib/api";
-import { adminUpdateAbout } from "@/lib/admin-api";
-import type { About, ApiResponse } from "@amaken/shared";
+import { useGetAboutContentQuery } from "@/lib/redux/api";
+import { useAdminUpdateAboutMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
@@ -20,10 +18,7 @@ export default function EditAboutPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  const { data: response, isLoading: fetching } = useQuery<ApiResponse<About[]>>({
-    queryKey: ["admin-about"],
-    queryFn: () => api.get("/about").then((r) => r.data),
-  });
+  const { data: response, isLoading: fetching } = useGetAboutContentQuery();
 
   const aboutItem = (response?.data ?? []).find((a) => a.id === id);
 
@@ -48,15 +43,17 @@ export default function EditAboutPage() {
     }
   };
 
-  const mutation = useMutation({
-    mutationFn: () =>
-      adminUpdateAbout(
-        id,
-        { title: title || undefined, content },
-        file ?? undefined
-      ),
-    onSuccess: () => router.push("/admin/about"),
-  });
+  const [mutation, mutationState] = useAdminUpdateAboutMutation();
+
+  const handleSubmit = () => {
+    mutation({
+      id,
+      data: { title: title || undefined, content },
+      file: file ?? undefined,
+    })
+      .unwrap()
+      .then(() => router.push("/admin/about"));
+  };
 
   if (fetching) {
     return (
@@ -167,12 +164,12 @@ export default function EditAboutPage() {
 
           <div className="flex items-center gap-3 border-t border-gray-100 pt-6">
             <button
-              onClick={() => mutation.mutate()}
-              disabled={!content || mutation.isPending}
+              onClick={handleSubmit}
+              disabled={!content || mutationState.isLoading}
               className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
-              {mutation.isPending ? "Saving..." : "Save Changes"}
+              {mutationState.isLoading ? "Saving..." : "Save Changes"}
             </button>
             <Link
               href="/admin/about"
@@ -182,7 +179,7 @@ export default function EditAboutPage() {
             </Link>
           </div>
 
-          {mutation.isError && (
+          {mutationState.isError && (
             <p className="text-sm text-red-600">
               Failed to update about content. Please try again.
             </p>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminDeleteTeamMember } from "@/lib/admin-api";
-import type { TeamMember, ApiResponse } from "@amaken/shared";
+import { useGetTeamMembersQuery } from "@/lib/redux/api";
+import { useAdminDeleteTeamMemberMutation } from "@/lib/redux/adminApi";
+import type { TeamMember } from "@amaken/shared";
 import { Plus, Pencil, Trash2, Users, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 
@@ -62,21 +61,11 @@ function TypeBadge({ type }: { type: string }) {
 }
 
 export default function AdminTeamPage() {
-  const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: response, isLoading } = useQuery<ApiResponse<TeamMember[]>>({
-    queryKey: ["admin-team"],
-    queryFn: () => api.get("/team").then((r) => r.data),
-  });
+  const { data: response, isLoading } = useGetTeamMembersQuery();
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteTeamMember(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
-      setDeleteId(null);
-    },
-  });
+  const [deleteMutation] = useAdminDeleteTeamMemberMutation();
 
   const items: TeamMember[] = response?.data ?? [];
 
@@ -87,7 +76,9 @@ export default function AdminTeamPage() {
         title="Delete Team Member"
         message="This action cannot be undone. Are you sure you want to delete this team member?"
         onConfirm={() => {
-          if (deleteId !== null) deleteMutation.mutate(deleteId);
+          if (deleteId !== null) {
+            deleteMutation(deleteId).unwrap().then(() => setDeleteId(null));
+          }
         }}
         onCancel={() => setDeleteId(null)}
       />

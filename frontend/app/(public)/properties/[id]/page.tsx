@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getProperty, submitLead, getProperties } from "@/lib/api";
+import { useGetPropertyQuery, useGetPropertiesQuery, useSubmitLeadMutation } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import PropertyCard from "@/components/shared/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/shared/Skeletons";
@@ -16,7 +15,6 @@ import type { Property } from "@amaken/shared";
 export default function PropertyDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const id = Number(params.id);
 
   const [activeImage, setActiveImage] = useState(0);
@@ -24,28 +22,14 @@ export default function PropertyDetailPage() {
   const [leadForm, setLeadForm] = useState({ name: "", email: "", phone: "", nationality: "" });
   const [leadSuccess, setLeadSuccess] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["property", id],
-    queryFn: () => getProperty(id),
-    enabled: !!id,
-  });
+  const { data, isLoading } = useGetPropertyQuery(id, { skip: !id });
 
-  const { data: sidebarData } = useQuery({
-    queryKey: ["properties", "sidebar", id],
-    queryFn: () => getProperties({ limit: 4, page: 1 }),
-  });
+  const { data: sidebarData } = useGetPropertiesQuery({ limit: 4, page: 1 });
 
-  const leadMutation = useMutation({
-    mutationFn: () => submitLead(id, leadForm),
-    onSuccess: () => {
-      setLeadSuccess(true);
-      setLeadForm({ name: "", email: "", phone: "", nationality: "" });
-      setTimeout(() => setShowLeadModal(false), 2000);
-    },
-  });
+  const [submitLead, leadMutation] = useSubmitLeadMutation();
 
-  const property: Property | undefined = data?.data?.data as Property | undefined;
-  const sidebarProperties: Property[] = sidebarData?.data?.data || [];
+  const property: Property | undefined = data?.data as Property | undefined;
+  const sidebarProperties: Property[] = sidebarData?.data || [];
 
   if (isLoading) {
     return (
@@ -400,7 +384,13 @@ export default function PropertyDetailPage() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    leadMutation.mutate();
+                    submitLead({ propertyId: id, data: leadForm })
+                      .unwrap()
+                      .then(() => {
+                        setLeadSuccess(true);
+                        setLeadForm({ name: "", email: "", phone: "", nationality: "" });
+                        setTimeout(() => setShowLeadModal(false), 2000);
+                      });
                   }}
                   className="space-y-3"
                 >
@@ -437,10 +427,10 @@ export default function PropertyDetailPage() {
                   />
                   <button
                     type="submit"
-                    disabled={leadMutation.isPending}
+                    disabled={leadMutation.isLoading}
                     className="w-full btn-primary disabled:opacity-60"
                   >
-                    {leadMutation.isPending ? "Sending..." : "Submit Inquiry"}
+                    {leadMutation.isLoading ? "Sending..." : "Submit Inquiry"}
                   </button>
                 </form>
               </>

@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { createProperty } from "@/lib/api";
+import { useCreatePropertyMutation } from "@/lib/redux/api";
 import { PROPERTY_TYPES, SELLING_TYPES, BHK_OPTIONS, PLAN_TYPES, DECORATION_TYPES, CURRENCIES } from "@amaken/shared";
 
 const STEPS = ["Basic Info", "Price & Location", "Features", "Images", "Review"];
@@ -16,6 +16,7 @@ export default function SubmitPropertyPage() {
   const [error, setError] = useState("");
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const [createProperty] = useCreatePropertyMutation();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -79,8 +80,8 @@ export default function SubmitPropertyPage() {
       const fd = new FormData();
       Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
       Object.entries(images).forEach(([k, v]) => { if (v) fd.append(k, v); });
-      const { data } = await createProperty(fd);
-      if (data.success) {
+      const result = await createProperty(fd).unwrap();
+      if (result.success) {
         router.push("/my-properties");
       }
     } catch (err: unknown) {

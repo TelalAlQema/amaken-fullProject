@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authForgotPassword } from "@/lib/api";
+import { useAuthForgotPasswordMutation } from "@/lib/redux/api";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -11,6 +11,7 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [authForgotPassword] = useAuthForgotPasswordMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +19,7 @@ export default function ForgotPasswordPage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await authForgotPassword(email);
+      const data = await authForgotPassword({ email }).unwrap();
       if (data.success) {
         sessionStorage.setItem("reset_email", email);
         setSuccess("OTP has been sent to your email. Check spam/junk folders.");
@@ -30,7 +31,7 @@ export default function ForgotPasswordPage() {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Failed to send OTP";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Failed to send OTP";
       setError(msg);
     } finally {
       setLoading(false);

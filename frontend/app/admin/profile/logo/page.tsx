@@ -3,16 +3,18 @@
 import { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
-import { getAdminProfile, uploadAdminLogo, removeAdminLogo } from "@/lib/admin-api";
-import type { Admin } from "@amaken/shared";
+import {
+  useGetAdminProfileQuery,
+  useUploadAdminLogoMutation,
+  useRemoveAdminLogoMutation,
+} from "@/lib/redux/adminApi";
+import type { ApiResponse } from "@amaken/shared";
 import { ArrowLeft, Upload, Trash2, X } from "lucide-react";
 
 export default function AdminChangeLogoPage() {
   const { setAdmin } = useAdminAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -21,50 +23,47 @@ export default function AdminChangeLogoPage() {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<"upload" | "delete">("upload");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-profile"],
-    queryFn: async () => {
-      const { data } = await getAdminProfile();
-      return data.success ? (data.data as Admin) : null;
-    },
-  });
+  const { data: response, isLoading } = useGetAdminProfileQuery();
+  const data = response?.data ?? null;
 
-  const uploadMutation = useMutation({
-    mutationFn: (file: File) => uploadAdminLogo(file),
-    onSuccess: (res) => {
-      if (res.data.success) {
-        const updatedLogo = res.data.data?.image || "";
+  const [uploadMutation, uploadState] = useUploadAdminLogoMutation();
+  const [deleteMutation, deleteState] = useRemoveAdminLogoMutation();
+
+  const handleUpload = () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("logo", selectedFile);
+    uploadMutation(formData)
+      .unwrap()
+      .then((res) => {
+        const updatedLogo = (res as ApiResponse<{ image: string }>).data?.image || "";
         setAdmin({ ...data!, companylogo: updatedLogo });
-        queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
         setSuccess("Company logo updated successfully");
         setError("");
         setShowModal(false);
         setPreview(null);
         setSelectedFile(null);
-      }
-    },
-    onError: (err: Error) => {
-      setError(err.message || "Upload failed");
-      setSuccess("");
-    },
-  });
+      })
+      .catch((err) => {
+        setError(err?.data?.message || err?.message || "Upload failed");
+        setSuccess("");
+      });
+  };
 
-  const deleteMutation = useMutation({
-    mutationFn: () => removeAdminLogo(),
-    onSuccess: (res) => {
-      if (res.data.success) {
+  const handleDelete = () => {
+    deleteMutation()
+      .unwrap()
+      .then(() => {
         setAdmin({ ...data!, companylogo: "" });
-        queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
         setSuccess("Company logo removed successfully");
         setError("");
         setShowModal(false);
-      }
-    },
-    onError: (err: Error) => {
-      setError(err.message || "Remove failed");
-      setSuccess("");
-    },
-  });
+      })
+      .catch((err) => {
+        setError(err?.data?.message || err?.message || "Remove failed");
+        setSuccess("");
+      });
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -174,19 +173,19 @@ export default function AdminChangeLogoPage() {
               </button>
               {modalMode === "upload" && selectedFile ? (
                 <button
-                  onClick={() => uploadMutation.mutate(selectedFile)}
-                  disabled={uploadMutation.isPending}
+                  onClick={handleUpload}
+                  disabled={uploadState.isLoading}
                   className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:opacity-50"
                 >
-                  {uploadMutation.isPending ? "Uploading..." : "Upload"}
+                  {uploadState.isLoading ? "Uploading..." : "Upload"}
                 </button>
               ) : (
                 <button
-                  onClick={() => deleteMutation.mutate()}
-                  disabled={deleteMutation.isPending}
+                  onClick={handleDelete}
+                  disabled={deleteState.isLoading}
                   className="flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-600 transition-colors disabled:opacity-50"
                 >
-                  {deleteMutation.isPending ? "Removing..." : "Remove"}
+                  {deleteState.isLoading ? "Removing..." : "Remove"}
                 </button>
               )}
             </div>

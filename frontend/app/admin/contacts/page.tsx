@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { deleteContact } from "@/lib/admin-api";
+import {
+  useAdminListContactsQuery,
+  useDeleteContactMutation,
+} from "@/lib/redux/adminApi";
 import { Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Contact {
@@ -24,29 +25,28 @@ interface Pagination {
 }
 
 export default function ContactsPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const limit = 15;
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-contacts", page],
-    queryFn: () =>
-      api.get("/admin/contacts", { params: { page, limit } }).then((r) => r.data),
-  });
+  const { data, isLoading } = useAdminListContactsQuery({ page, limit });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteContact(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-contacts"] });
-    },
-  });
+  const [deleteMutation] = useDeleteContactMutation();
 
-  const items: Contact[] = data?.items ?? [];
-  const pagination: Pagination = data?.pagination ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
+  const responseData = data?.data as unknown as
+    | Contact[]
+    | { items?: Contact[]; pagination?: Pagination }
+    | undefined;
+  const resultData = Array.isArray(responseData) ? undefined : responseData;
+  const items: Contact[] =
+    (resultData?.items as Contact[]) ??
+    (responseData as unknown as Contact[]) ??
+    [];
+  const pagination: Pagination =
+    (resultData?.pagination as Pagination) ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
 
   const handleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this contact submission?")) return;
-    deleteMutation.mutate(id);
+    deleteMutation(id).unwrap();
   };
 
   return (

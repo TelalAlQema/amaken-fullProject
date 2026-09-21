@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getFeedback } from "@/lib/api";
+import { useGetFeedbackQuery } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
 export default function ViewFeedbackPage() {
@@ -12,20 +11,9 @@ export default function ViewFeedbackPage() {
   const params = useParams();
   const router = useRouter();
   const id = Number(params.id);
-  const [fb, setFb] = useState<Feedback | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading } = useGetFeedbackQuery(id, { skip: !id });
 
-  useEffect(() => {
-    async function fetch() {
-      try {
-        const { data } = await getFeedback(id);
-        if (data.success && data.data) setFb(data.data as Feedback);
-      } finally {
-        setLoading(false);
-      }
-    }
-    if (id) fetch();
-  }, [id]);
+  const fb = (data?.success ? data.data : null) as Feedback | null;
 
   if (!user) return null;
 
@@ -33,7 +21,7 @@ export default function ViewFeedbackPage() {
     <div className="rounded-lg bg-white p-6 shadow-md">
       <h2 className="mb-6 font-heading text-xl font-bold text-navy">View Feedback</h2>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-12 text-center text-amaken-gray">Loading...</div>
       ) : !fb ? (
         <div className="py-12 text-center text-amaken-gray">Feedback not found.</div>

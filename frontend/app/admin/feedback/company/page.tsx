@@ -1,7 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { useGetCompanyFeedbackQuery } from "@/lib/redux/adminApi";
 import { Star } from "lucide-react";
 
 interface Feedback {
@@ -29,20 +28,9 @@ function StarRating({ rating = 0 }: { rating: number }) {
 }
 
 export default function CompanyFeedbackPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-company-feedback"],
-    queryFn: async () => {
-      try {
-        const res = await api.get("/feedback/about-me");
-        return res.data;
-      } catch {
-        const res = await api.get("/feedback/my");
-        return res.data;
-      }
-    },
-  });
+  const { data, isLoading } = useGetCompanyFeedbackQuery();
 
-  const items: Feedback[] = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
+  const items: Feedback[] = (data?.data as unknown as Feedback[]) ?? [];
 
   return (
     <div className="bg-gray-50 p-6 min-h-screen">

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Upload, Save } from "lucide-react";
-import { api, updateProperty } from "@/lib/api";
+import { useGetPropertyQuery, useUpdatePropertyMutation } from "@/lib/redux/api";
 import {
   PROPERTY_TYPES,
   SELLING_TYPES,
@@ -14,7 +13,7 @@ import {
   DECORATION_TYPES,
   CURRENCIES,
 } from "@amaken/shared";
-import type { Property, ApiResponse } from "@amaken/shared";
+import type { Property } from "@amaken/shared";
 
 const STEPS = [
   "Basic Info",
@@ -111,7 +110,6 @@ export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
-  const queryClient = useQueryClient();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>({
     title: "",
@@ -140,12 +138,10 @@ export default function EditPropertyPage() {
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [formReady, setFormReady] = useState(false);
 
-  const { data: property, isLoading } = useQuery<Property>({
-    queryKey: ["admin-property", id],
-    queryFn: () =>
-      api.get<ApiResponse<Property>>(`/properties/${id}`).then((r) => r.data.data as Property),
-    enabled: !!id,
+  const { data: propertyResponse, isLoading } = useGetPropertyQuery(id, {
+    skip: !id,
   });
+  const property = propertyResponse?.data;
 
   useEffect(() => {
     if (property && !formReady) {
@@ -184,22 +180,20 @@ export default function EditPropertyPage() {
     setFiles((prev) => ({ ...prev, [key]: e.target.files?.[0] || null }));
   };
 
-  const mutation = useMutation({
-    mutationFn: () => {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        fd.append(k, v);
-      });
-      Object.entries(files).forEach(([k, v]) => {
-        if (v) fd.append(k, v);
-      });
-      return updateProperty(id, fd);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-property", id] });
-      router.push(`/admin/properties/${id}`);
-    },
-  });
+  const [mutation, mutationState] = useUpdatePropertyMutation();
+
+  const handleSubmit = () => {
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => {
+      fd.append(k, v);
+    });
+    Object.entries(files).forEach(([k, v]) => {
+      if (v) fd.append(k, v);
+    });
+    mutation({ id, formData: fd })
+      .unwrap()
+      .then(() => router.push(`/admin/properties/${id}`));
+  };
 
   if (isLoading || !formReady) {
     return (
@@ -457,17 +451,17 @@ export default function EditPropertyPage() {
             </button>
           ) : (
             <button
-              onClick={() => mutation.mutate()}
-              disabled={mutation.isPending}
+              onClick={handleSubmit}
+              disabled={mutationState.isLoading}
               className="flex items-center gap-2 rounded-lg bg-[#17c788] px-4 py-2 text-sm font-medium text-white hover:bg-[#14b077] disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {mutation.isPending ? "Saving..." : "Save Changes"}
+              {mutationState.isLoading ? "Saving..." : "Save Changes"}
             </button>
           )}
         </div>
 
-        {mutation.isError && (
+        {mutationState.isError && (
           <p className="mt-4 text-sm text-red-600">
             Failed to update property. Please try again.
           </p>

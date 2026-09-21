@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { uploadAvatar, removeAvatar } from "@/lib/api";
+import { useUploadAvatarMutation, useRemoveAvatarMutation } from "@/lib/redux/api";
 
 export default function ProfilePicturePage() {
   const { user, setUser } = useAuth();
@@ -15,6 +15,8 @@ export default function ProfilePicturePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [uploadAvatar] = useUploadAvatarMutation();
+  const [removeAvatar] = useRemoveAvatarMutation();
 
   if (!user) return null;
 
@@ -46,7 +48,9 @@ export default function ProfilePicturePage() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await uploadAvatar(selectedFile);
+      const fd = new FormData();
+      fd.append("avatar", selectedFile);
+      const data = await uploadAvatar(fd).unwrap();
       if (data.success) {
         setUser({ ...user, uimage: data.data!.image });
         setSuccess("Profile picture updated successfully");
@@ -66,7 +70,7 @@ export default function ProfilePicturePage() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await removeAvatar();
+      const data = await removeAvatar().unwrap();
       if (data.success) {
         setUser({ ...user, uimage: "" });
         setSuccess("Profile picture removed successfully");

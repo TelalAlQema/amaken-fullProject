@@ -1,43 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getMyProperties, getMyFeedback, getFeedbackAboutMe, deactivateAccount, activateAccount, deleteAccount } from "@/lib/api";
+import { useGetMyPropertiesQuery, useGetMyFeedbackQuery, useGetFeedbackAboutMeQuery, useDeactivateAccountMutation, useActivateAccountMutation, useDeleteAccountMutation } from "@/lib/redux/api";
 import type { Property, Feedback } from "@amaken/shared";
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
   const router = useRouter();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [feedback, setFeedback] = useState<Feedback[]>([]);
-  const [feedbackAboutMe, setFeedbackAboutMe] = useState<Feedback[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: propRes, isLoading: propsLoading } = useGetMyPropertiesQuery({ limit: 5 });
+  const { data: fbRes, isLoading: fbLoading } = useGetMyFeedbackQuery({ limit: 10 });
+  const { data: aboutRes, isLoading: aboutLoading } = useGetFeedbackAboutMeQuery({ limit: 10 });
+  const [deactivateAccount] = useDeactivateAccountMutation();
+  const [activateAccount] = useActivateAccountMutation();
+  const [deleteAccount] = useDeleteAccountMutation();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [propRes, fbRes, aboutRes] = await Promise.allSettled([
-          getMyProperties({ limit: 5 }),
-          getMyFeedback({ limit: 10 }),
-          getFeedbackAboutMe({ limit: 10 }),
-        ]);
-        if (propRes.status === "fulfilled" && propRes.value.data.success) {
-          setProperties(propRes.value.data.data as Property[]);
-        }
-        if (fbRes.status === "fulfilled" && fbRes.value.data.success) {
-          setFeedback(fbRes.value.data.data as Feedback[]);
-        }
-        if (aboutRes.status === "fulfilled" && aboutRes.value.data.success) {
-          setFeedbackAboutMe(aboutRes.value.data.data as Feedback[]);
-        }
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+  const loading = propsLoading || fbLoading || aboutLoading;
+  const properties = (propRes?.success ? propRes.data : []) as Property[];
+  const feedback = (fbRes?.success ? fbRes.data : []) as Feedback[];
+  const feedbackAboutMe = (aboutRes?.success ? aboutRes.data : []) as Feedback[];
 
   if (!user) return null;
 
@@ -242,7 +224,7 @@ export default function ProfilePage() {
               if (!confirm(user.deactivate === 0 ? "Reactivate your account?" : "Deactivate your account? You can reactivate later.")) return;
               try {
                 const fn = user.deactivate === 0 ? activateAccount : deactivateAccount;
-                const { data } = await fn();
+                const data = await fn().unwrap();
                 if (data.success) {
                   setUser({ ...user, deactivate: user.deactivate === 0 ? 1 : 0 });
                   alert(user.deactivate === 0 ? "Account reactivated" : "Account deactivated");
@@ -260,7 +242,7 @@ export default function ProfilePage() {
               if (!confirm("DELETE your account? This action cannot be undone!")) return;
               if (!confirm("Are you REALLY sure? All your data will be permanently deleted.")) return;
               try {
-                const { data } = await deleteAccount();
+                const data = await deleteAccount().unwrap();
                 if (data.success) {
                   logout();
                 }

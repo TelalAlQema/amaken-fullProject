@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@amaken/shared";
-import { api } from "@/lib/api";
+import { useAuthLoginMutation, useGetMeQuery } from "@/lib/redux/api";
 
 interface AuthContextType {
   user: User | null;
@@ -18,43 +18,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authLogin] = useAuthLoginMutation();
   const router = useRouter();
 
-  const fetchUser = useCallback(async () => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const { data } = await api.get("/users/me");
-      if (data.success && data.data) {
-        setUser(data.data as User);
-      } else {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-      }
-    } catch {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const { data: meData, isLoading: meLoading } = useGetMeQuery(undefined, {
+    skip: typeof window === "undefined" || !localStorage.getItem("access_token"),
+  });
 
   useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const login = async (email: string, password: string) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    if (data.success && data.data) {
-      localStorage.setItem("access_token", data.data.accessToken);
-      localStorage.setItem("refresh_token", data.data.refreshToken);
-      setUser(data.data.user);
+    if (meData?.success && meData.data) {
+      setUser(meData.data);
     }
-  };
+  }, [meData]);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const result = await authLogin({ email, password });
+      const payload = (result as { data?: { data?: { accessToken: string; refreshToken: string; user: User } } }).data;
+      if (payload?.data) {
+        localStorage.setItem("access_token", payload.data.accessToken);
+        localStorage.setItem("refresh_token", payload.data.refreshToken);
+        setUser(payload.data.user);
+        return;
+      }
+      const err = (result as { error?: { data?: { error?: { message?: string } } } }).error;
+      throw new Error(err?.data?.error?.message || "Login failed. Please check your credentials.");
+    },
+    [authLogin]
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem("access_token");
@@ -67,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        isLoading,
+        isLoading: meLoading && !user,
         isAuthenticated: !!user,
         login,
         logout,

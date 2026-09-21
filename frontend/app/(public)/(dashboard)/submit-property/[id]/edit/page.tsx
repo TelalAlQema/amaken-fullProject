@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getProperty, updateProperty } from "@/lib/api";
+import { useGetPropertyQuery, useUpdatePropertyMutation } from "@/lib/redux/api";
 import { PROPERTY_TYPES, SELLING_TYPES, BHK_OPTIONS, PLAN_TYPES, DECORATION_TYPES, CURRENCIES } from "@amaken/shared";
 
 export default function EditPropertyPage() {
@@ -11,10 +11,12 @@ export default function EditPropertyPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const { data: propertyData, isLoading } = useGetPropertyQuery(id, { skip: !id });
+  const [updateProperty] = useUpdatePropertyMutation();
 
   const [formData, setFormData] = useState({
     title: "", pcontent: "", type: "Apartment", stype: "sale", bhk: "1 BHK",
@@ -31,43 +33,39 @@ export default function EditPropertyPage() {
   const [imagePreviews, setImagePreviews] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    async function fetchProperty() {
-      try {
-        const { data } = await getProperty(id);
-        if (data.success && data.data) {
-          const p = data.data;
-          setFormData({
-            title: p.title || "", pcontent: p.pcontent || "", type: p.type || "Apartment",
-            stype: p.stype || "sale", bhk: p.bhk || "1 BHK",
-            bedroom: p.bedroom || "", bathroom: p.bathroom || "", balcony: p.balcony || "",
-            kitchen: p.kitchen || "", hall: p.hall || "", floor: p.floor || "",
-            price: p.price || "", curr: p.curr || "AED", city: p.city || "",
-            state: p.state || "", location: p.location || "", totalfloor: p.totalfloor || "",
-            size: p.size || "", feature: p.feature || "", status: p.status || "available",
-            plan: p.plan || "", decoration: p.decoration || "",
-            video1: p.video1 || "", video2: p.video2 || "", video3: p.video3 || "",
-            brochure: p.brochure || "", isFeatured: String(p.isFeatured || 0),
-            specialoffer: String(p.offer || 0),
-          });
-          const imgs: Record<string, string> = {};
-          if (p.pimage) imgs.aimage = `/uploads/properties/${p.pimage}`;
-          if (p.pimage1) imgs.aimage1 = `/uploads/properties/${p.pimage1}`;
-          if (p.pimage2) imgs.aimage2 = `/uploads/properties/${p.pimage2}`;
-          if (p.pimage3) imgs.aimage3 = `/uploads/properties/${p.pimage3}`;
-          if (p.pimage4) imgs.aimage4 = `/uploads/properties/${p.pimage4}`;
-          if (p.mapimage) imgs.fimage = `/uploads/properties/${p.mapimage}`;
-          if (p.topmapimage) imgs.fimage1 = `/uploads/properties/${p.topmapimage}`;
-          if (p.groundmapimage) imgs.fimage2 = `/uploads/properties/${p.groundmapimage}`;
-          setImagePreviews(imgs);
-        }
-      } catch {
-        setError("Failed to load property");
-      } finally {
-        setLoading(false);
-      }
+    if (propertyData?.success && propertyData?.data) {
+      const p = propertyData.data;
+      setFormData({
+        title: p.title || "", pcontent: p.pcontent || "", type: p.type || "Apartment",
+        stype: p.stype || "sale", bhk: p.bhk || "1 BHK",
+        bedroom: p.bedroom || "", bathroom: p.bathroom || "", balcony: p.balcony || "",
+        kitchen: p.kitchen || "", hall: p.hall || "", floor: p.floor || "",
+        price: p.price || "", curr: p.curr || "AED", city: p.city || "",
+        state: p.state || "", location: p.location || "", totalfloor: p.totalfloor || "",
+        size: p.size || "", feature: p.feature || "", status: p.status || "available",
+        plan: p.plan || "", decoration: p.decoration || "",
+        video1: p.video1 || "", video2: p.video2 || "", video3: p.video3 || "",
+        brochure: p.brochure || "", isFeatured: String(p.isFeatured || 0),
+        specialoffer: String(p.offer || 0),
+      });
+      const imgs: Record<string, string> = {};
+      if (p.pimage) imgs.aimage = `/uploads/properties/${p.pimage}`;
+      if (p.pimage1) imgs.aimage1 = `/uploads/properties/${p.pimage1}`;
+      if (p.pimage2) imgs.aimage2 = `/uploads/properties/${p.pimage2}`;
+      if (p.pimage3) imgs.aimage3 = `/uploads/properties/${p.pimage3}`;
+      if (p.pimage4) imgs.aimage4 = `/uploads/properties/${p.pimage4}`;
+      if (p.mapimage) imgs.fimage = `/uploads/properties/${p.mapimage}`;
+      if (p.topmapimage) imgs.fimage1 = `/uploads/properties/${p.topmapimage}`;
+      if (p.groundmapimage) imgs.fimage2 = `/uploads/properties/${p.groundmapimage}`;
+      setImagePreviews(imgs);
     }
-    if (id) fetchProperty();
-  }, [id]);
+  }, [propertyData]);
+
+  useEffect(() => {
+    if (propertyData === undefined && !isLoading && id) {
+      setError("Failed to load property");
+    }
+  }, [propertyData, isLoading, id]);
 
   const update = (field: string, value: string) => setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -88,8 +86,8 @@ export default function EditPropertyPage() {
       const fd = new FormData();
       Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
       Object.entries(images).forEach(([k, v]) => { if (v) fd.append(k, v); });
-      const { data } = await updateProperty(id, fd);
-      if (data.success) {
+      const result = await updateProperty({ id, formData: fd }).unwrap();
+      if (result.success) {
         setSuccess("Property updated successfully");
         setTimeout(() => router.push("/my-properties"), 1500);
       }
@@ -100,7 +98,7 @@ export default function EditPropertyPage() {
     }
   };
 
-  if (loading) return <div className="rounded-lg bg-white p-6 shadow-md text-center text-amaken-gray">Loading...</div>;
+  if (isLoading) return <div className="rounded-lg bg-white p-6 shadow-md text-center text-amaken-gray">Loading...</div>;
   if (!user) return null;
 
   return (

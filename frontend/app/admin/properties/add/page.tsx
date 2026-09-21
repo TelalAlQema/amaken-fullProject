@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Upload } from "lucide-react";
-import { createProperty } from "@/lib/api";
+import { useCreatePropertyMutation } from "@/lib/redux/api";
 import {
   PROPERTY_TYPES,
   SELLING_TYPES,
@@ -143,21 +142,20 @@ export default function AddPropertyPage() {
     setFiles((prev) => ({ ...prev, [key]: e.target.files?.[0] || null }));
   };
 
-  const mutation = useMutation({
-    mutationFn: () => {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (v) fd.append(k, v);
-      });
-      Object.entries(files).forEach(([k, v]) => {
-        if (v) fd.append(k, v);
-      });
-      return createProperty(fd);
-    },
-    onSuccess: () => {
-      router.push("/admin/properties");
-    },
-  });
+  const [mutation, mutationState] = useCreatePropertyMutation();
+
+  const handleSubmit = () => {
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => {
+      if (v) fd.append(k, v);
+    });
+    Object.entries(files).forEach(([k, v]) => {
+      if (v) fd.append(k, v);
+    });
+    mutation(fd)
+      .unwrap()
+      .then(() => router.push("/admin/properties"));
+  };
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -388,17 +386,17 @@ export default function AddPropertyPage() {
             </button>
           ) : (
             <button
-              onClick={() => mutation.mutate()}
-              disabled={mutation.isPending}
+              onClick={handleSubmit}
+              disabled={mutationState.isLoading}
               className="flex items-center gap-2 rounded-lg bg-[#17c788] px-4 py-2 text-sm font-medium text-white hover:bg-[#14b077] disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
-              {mutation.isPending ? "Submitting..." : "Submit Property"}
+              {mutationState.isLoading ? "Submitting..." : "Submit Property"}
             </button>
           )}
         </div>
 
-        {mutation.isError && (
+        {mutationState.isError && (
           <p className="mt-4 text-sm text-red-600">
             Failed to create property. Please try again.
           </p>

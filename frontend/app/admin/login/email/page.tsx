@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { Mail, Lock, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { adminLogin } from "@/lib/admin-api";
+import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
 
 export default function AdminEmailPage() {
   const router = useRouter();
+  const { login } = useAdminAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -32,20 +33,11 @@ export default function AdminEmailPage() {
 
     setIsLoading(true);
     try {
-      const { data } = await adminLogin(email, password);
-      if (data.success && data.data) {
-        const { accessToken, refreshToken } = data.data;
-        localStorage.setItem("admin_access_token", accessToken);
-        localStorage.setItem("admin_refresh_token", refreshToken);
-        localStorage.setItem("access_token", accessToken);
-        localStorage.setItem("refresh_token", refreshToken);
-        localStorage.setItem("admin_pin_verified", "true");
-        router.push("/admin");
-      } else {
-        setError(data.error?.message || "Invalid credentials. Please try again.");
-      }
-    } catch {
-      setError("Invalid credentials. Please try again.");
+      await login(email, password);
+      router.push("/admin");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Invalid credentials. Please try again.";
+      setError(message);
     } finally {
       setIsLoading(false);
     }

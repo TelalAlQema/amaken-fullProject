@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { adminCreateTeamMember } from "@/lib/admin-api";
+import { useAdminCreateTeamMemberMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
@@ -60,17 +59,16 @@ export default function AddTeamMemberPage() {
     }
   };
 
-  const mutation = useMutation({
-    mutationFn: () => {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (v) fd.append(k, v);
-      });
-      if (file) fd.append("image", file);
-      return adminCreateTeamMember(fd);
-    },
-    onSuccess: () => router.push("/admin/team"),
-  });
+  const [mutation, mutationState] = useAdminCreateTeamMemberMutation();
+
+  const handleSubmit = () => {
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => {
+      if (v) fd.append(k, v);
+    });
+    if (file) fd.append("image", file);
+    mutation(fd).unwrap().then(() => router.push("/admin/team"));
+  };
 
   return (
     <div className="bg-gray-50 p-6 min-h-screen">
@@ -267,18 +265,18 @@ export default function AddTeamMemberPage() {
           {/* Submit */}
           <div className="flex items-center gap-3 border-t border-gray-100 pt-6">
             <button
-              onClick={() => mutation.mutate()}
+              onClick={handleSubmit}
               disabled={
                 !form.fname ||
                 !form.lname ||
                 !form.email ||
                 !form.position ||
-                mutation.isPending
+                mutationState.isLoading
               }
               className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
-              {mutation.isPending ? "Creating..." : "Create Team Member"}
+              {mutationState.isLoading ? "Creating..." : "Create Team Member"}
             </button>
             <Link
               href="/admin/team"
@@ -288,7 +286,7 @@ export default function AddTeamMemberPage() {
             </Link>
           </div>
 
-          {mutation.isError && (
+          {mutationState.isError && (
             <p className="text-sm text-red-600">
               Failed to create team member. Please try again.
             </p>

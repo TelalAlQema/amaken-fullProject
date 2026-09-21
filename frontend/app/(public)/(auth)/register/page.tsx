@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authRegister } from "@/lib/api";
+import { useAuthRegisterMutation } from "@/lib/redux/api";
 import { PROPERTY_TYPES, USER_TYPES, GENDERS, BHK_OPTIONS, SELLING_TYPES, PLAN_TYPES, DECORATION_TYPES, CURRENCIES } from "@amaken/shared";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const router = useRouter();
+  const [authRegister] = useAuthRegisterMutation();
 
   
 
@@ -70,7 +71,7 @@ useEffect(() => {
     setError("");
     setLoading(true);
     try {
-      const { data } = await authRegister({
+      const data = await authRegister({
         uname: formData.fname,
         lname: formData.lname,
         email,
@@ -91,7 +92,7 @@ useEffect(() => {
         instagram: formData.instagram,
         tiktok: formData.tiktok,
         twitter: formData.twitter,
-      });
+      }).unwrap();
       if (data.success && data.data) {
         localStorage.setItem("access_token", data.data.accessToken);
         localStorage.setItem("refresh_token", data.data.refreshToken);
@@ -102,7 +103,7 @@ useEffect(() => {
       const msg =
         err instanceof Error
           ? err.message
-          : (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || "Registration failed";
+          : (err as { data?: { error?: { message?: string } } })?.data?.error?.message || "Registration failed";
       setError(msg);
     } finally {
       setLoading(false);

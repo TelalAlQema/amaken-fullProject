@@ -82,7 +82,9 @@ export const CONTACT = {
   PHONE: "+971 55 896 5353",
   EMAIL: "info@amaken-realestate.com",
   WHATSAPP: "+971558965353",
-  ADDRESS: "Dubai, United Arab Emirates",
+  ADDRESS: "Al Reem Tower, Office 1301, Dubai-UAE",
+  ADDRESS_LOCALITY: "Dubai",
+  ADDRESS_COUNTRY: "AE",
 } as const;
 
 // Site info

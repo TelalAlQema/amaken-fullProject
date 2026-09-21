@@ -1,57 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { CheckCircle, XCircle, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  adminListPendingApproval,
-  approveProperty,
-  disapproveProperty,
-} from "@/lib/admin-api";
+  useAdminListPendingApprovalQuery,
+  useApprovePropertyMutation,
+  useDisapprovePropertyMutation,
+} from "@/lib/redux/adminApi";
 import DataTable from "@/components/admin/DataTable";
-import type { Property, ApiResponse } from "@amaken/shared";
-
-interface ApprovalResponse {
-  success: boolean;
-  data: Property[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+import type { Property } from "@amaken/shared";
 
 export default function ApprovalPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-properties-approval", page],
-    queryFn: () =>
-      adminListPendingApproval(page, 20).then((r) => ({
-        success: r.data.success,
-        data: (r.data.data as Property[]) ?? [],
-        pagination: r.data.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
-      })),
-  });
+  const { data, isLoading } = useAdminListPendingApprovalQuery({ page, limit: 20 });
 
-  const approveMut = useMutation({
-    mutationFn: (id: number) => approveProperty(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-properties-approval"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
-    },
-  });
-
-  const disapproveMut = useMutation({
-    mutationFn: (id: number) => disapproveProperty(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-properties-approval"] });
-      queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
-    },
-  });
+  const [approveMut, approveState] = useApprovePropertyMutation();
+  const [disapproveMut, disapproveState] = useDisapprovePropertyMutation();
 
   const properties = data?.data || [];
   const pagination = data?.pagination;
@@ -134,10 +100,10 @@ export default function ApprovalPage() {
           <button
             onClick={() => {
               if (window.confirm(`Approve "${item.title}"?`)) {
-                approveMut.mutate(item.id);
+                approveMut(item.id).unwrap();
               }
             }}
-            disabled={approveMut.isPending || disapproveMut.isPending}
+            disabled={approveState.isLoading || disapproveState.isLoading}
             className="inline-flex items-center gap-1 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
           >
             <CheckCircle className="h-3.5 w-3.5" />
@@ -146,10 +112,10 @@ export default function ApprovalPage() {
           <button
             onClick={() => {
               if (window.confirm(`Disapprove "${item.title}"?`)) {
-                disapproveMut.mutate(item.id);
+                disapproveMut(item.id).unwrap();
               }
             }}
-            disabled={approveMut.isPending || disapproveMut.isPending}
+            disabled={approveState.isLoading || disapproveState.isLoading}
             className="inline-flex items-center gap-1 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             <XCircle className="h-3.5 w-3.5" />

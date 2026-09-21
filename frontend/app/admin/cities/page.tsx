@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminCreateCity, adminUpdateCity, adminDeleteCity } from "@/lib/admin-api";
-import type { City, State, ApiResponse } from "@amaken/shared";
+import { useGetCitiesQuery, useGetStatesQuery } from "@/lib/redux/api";
+import {
+  useAdminCreateCityMutation,
+  useAdminUpdateCityMutation,
+  useAdminDeleteCityMutation,
+} from "@/lib/redux/adminApi";
+import type { City, State } from "@amaken/shared";
 import { Plus, Pencil, Trash2, MapPin, Check, X } from "lucide-react";
 
 function ConfirmDialog({
@@ -46,7 +49,6 @@ function ConfirmDialog({
 }
 
 export default function AdminCitiesPage() {
-  const queryClient = useQueryClient();
   const [newName, setNewName] = useState("");
   const [newSid, setNewSid] = useState<number>(0);
   const [editId, setEditId] = useState<number | null>(null);
@@ -54,15 +56,9 @@ export default function AdminCitiesPage() {
   const [editSid, setEditSid] = useState<number>(0);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: citiesRes, isLoading: citiesLoading } = useQuery<ApiResponse<City[]>>({
-    queryKey: ["admin-cities"],
-    queryFn: () => api.get("/cities").then((r) => r.data),
-  });
+  const { data: citiesRes, isLoading: citiesLoading } = useGetCitiesQuery();
 
-  const { data: statesRes } = useQuery<ApiResponse<State[]>>({
-    queryKey: ["admin-states"],
-    queryFn: () => api.get("/states").then((r) => r.data),
-  });
+  const { data: statesRes } = useGetStatesQuery();
 
   const states: State[] = statesRes?.data ?? [];
   const cities: City[] = citiesRes?.data ?? [];
@@ -72,33 +68,9 @@ export default function AdminCitiesPage() {
     return acc;
   }, {});
 
-  const createMutation = useMutation({
-    mutationFn: () => adminCreateCity(newName, newSid),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-cities"] });
-      setNewName("");
-      setNewSid(0);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, cname, sid }: { id: number; cname: string; sid: number }) =>
-      adminUpdateCity(id, cname, sid),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-cities"] });
-      setEditId(null);
-      setEditName("");
-      setEditSid(0);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteCity(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-cities"] });
-      setDeleteId(null);
-    },
-  });
+  const [createMutation, createState] = useAdminCreateCityMutation();
+  const [updateMutation] = useAdminUpdateCityMutation();
+  const [deleteMutation] = useAdminDeleteCityMutation();
 
   return (
     <div className="bg-gray-50 p-6 min-h-screen">
@@ -107,7 +79,9 @@ export default function AdminCitiesPage() {
         title="Delete City"
         message="This action cannot be undone. Are you sure you want to delete this city?"
         onConfirm={() => {
-          if (deleteId !== null) deleteMutation.mutate(deleteId);
+          if (deleteId !== null) {
+            deleteMutation(deleteId).unwrap().then(() => setDeleteId(null));
+          }
         }}
         onCancel={() => setDeleteId(null)}
       />
@@ -144,16 +118,22 @@ export default function AdminCitiesPage() {
           </select>
           <button
             onClick={() => {
-              if (newName.trim() && newSid) createMutation.mutate();
+              if (newName.trim() && newSid)
+                createMutation({ cname: newName, sid: newSid })
+                  .unwrap()
+                  .then(() => {
+                    setNewName("");
+                    setNewSid(0);
+                  });
             }}
-            disabled={!newName.trim() || !newSid || createMutation.isPending}
+            disabled={!newName.trim() || !newSid || createState.isLoading}
             className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
-            {createMutation.isPending ? "Adding..." : "Add"}
+            {createState.isLoading ? "Adding..." : "Add"}
           </button>
         </div>
-        {createMutation.isError && (
+        {createState.isError && (
           <p className="mt-2 text-sm text-red-600">Failed to add city.</p>
         )}
       </div>
@@ -246,11 +226,17 @@ export default function AdminCitiesPage() {
                           <button
                             onClick={() => {
                               if (editName.trim() && editSid) {
-                                updateMutation.mutate({
+                                updateMutation({
                                   id: city.cid,
                                   cname: editName,
                                   sid: editSid,
-                                });
+                                })
+                                  .unwrap()
+                                  .then(() => {
+                                    setEditId(null);
+                                    setEditName("");
+                                    setEditSid(0);
+                                  });
                               }
                             }}
                             className="rounded-lg p-1.5 text-green-600 hover:bg-green-50"

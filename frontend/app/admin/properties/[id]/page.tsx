@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,51 +18,37 @@ import {
   Bath,
   Maximize,
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { useGetPropertyQuery } from "@/lib/redux/api";
 import {
-  approveProperty,
-  disapproveProperty,
-  hideProperty,
-  displayProperty,
-  freezeProperty,
-  releaseProperty,
-  adminDeleteProperty,
-} from "@/lib/admin-api";
-import type { Property, ApiResponse } from "@amaken/shared";
+  useApprovePropertyMutation,
+  useDisapprovePropertyMutation,
+  useHidePropertyMutation,
+  useDisplayPropertyMutation,
+  useFreezePropertyMutation,
+  useReleasePropertyMutation,
+  useAdminDeletePropertyMutation,
+} from "@/lib/redux/adminApi";
+import type { Property } from "@amaken/shared";
 
 export default function PropertyDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
-  const queryClient = useQueryClient();
   const [lightbox, setLightbox] = useState<string | null>(null);
 
-  const { data: property, isLoading } = useQuery<Property>({
-    queryKey: ["admin-property", id],
-    queryFn: () =>
-      api.get<ApiResponse<Property>>(`/properties/${id}`).then((r) => r.data.data as Property),
-    enabled: !!id,
+  const { data: propertyResponse, isLoading } = useGetPropertyQuery(id, {
+    skip: !id,
   });
+  const property = propertyResponse?.data;
 
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-property", id] });
-    queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
-  };
+  const [approveMut, approveState] = useApprovePropertyMutation();
+  const [disapproveMut, disapproveState] = useDisapprovePropertyMutation();
+  const [hideMut, hideState] = useHidePropertyMutation();
+  const [displayMut, displayState] = useDisplayPropertyMutation();
+  const [freezeMut, freezeState] = useFreezePropertyMutation();
+  const [releaseMut, releaseState] = useReleasePropertyMutation();
 
-  const approveMut = useMutation({ mutationFn: () => approveProperty(id), onSuccess: invalidate });
-  const disapproveMut = useMutation({ mutationFn: () => disapproveProperty(id), onSuccess: invalidate });
-  const hideMut = useMutation({ mutationFn: () => hideProperty(id), onSuccess: invalidate });
-  const displayMut = useMutation({ mutationFn: () => displayProperty(id), onSuccess: invalidate });
-  const freezeMut = useMutation({ mutationFn: () => freezeProperty(id), onSuccess: invalidate });
-  const releaseMut = useMutation({ mutationFn: () => releaseProperty(id), onSuccess: invalidate });
-
-  const deleteMutation = useMutation({
-    mutationFn: () => adminDeleteProperty(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
-      router.push("/admin/properties");
-    },
-  });
+  const [deleteMutation, deleteState] = useAdminDeletePropertyMutation();
 
   if (isLoading) {
     return (
@@ -94,7 +79,9 @@ export default function PropertyDetailPage() {
 
   const handleDelete = () => {
     if (window.confirm("Delete this property? This cannot be undone.")) {
-      deleteMutation.mutate();
+      deleteMutation(id)
+        .unwrap()
+        .then(() => router.push("/admin/properties"));
     }
   };
 
@@ -143,7 +130,7 @@ export default function PropertyDetailPage() {
           </Link>
           <button
             onClick={handleDelete}
-            disabled={deleteMutation.isPending}
+            disabled={deleteState.isLoading}
             className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             <Trash2 className="h-4 w-4" /> Delete
@@ -288,12 +275,12 @@ export default function PropertyDetailPage() {
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Actions</h2>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
-                {actionBtn("Approve", () => approveMut.mutate(), "bg-green-600 hover:bg-green-700", <CheckCircle className="h-4 w-4" />, approveMut.isPending)}
-                {actionBtn("Disapprove", () => disapproveMut.mutate(), "bg-red-600 hover:bg-red-700", <XCircle className="h-4 w-4" />, disapproveMut.isPending)}
-                {actionBtn("Hide", () => hideMut.mutate(), "bg-yellow-500 hover:bg-yellow-600", <EyeOff className="h-4 w-4" />, hideMut.isPending)}
-                {actionBtn("Display", () => displayMut.mutate(), "bg-emerald-600 hover:bg-emerald-700", <Eye className="h-4 w-4" />, displayMut.isPending)}
-                {actionBtn("Freeze", () => freezeMut.mutate(), "bg-blue-600 hover:bg-blue-700", <Snowflake className="h-4 w-4" />, freezeMut.isPending)}
-                {actionBtn("Release", () => releaseMut.mutate(), "bg-green-600 hover:bg-green-700", <ExternalLink className="h-4 w-4" />, releaseMut.isPending)}
+                {actionBtn("Approve", () => approveMut(id).unwrap(), "bg-green-600 hover:bg-green-700", <CheckCircle className="h-4 w-4" />, approveState.isLoading)}
+                {actionBtn("Disapprove", () => disapproveMut(id).unwrap(), "bg-red-600 hover:bg-red-700", <XCircle className="h-4 w-4" />, disapproveState.isLoading)}
+                {actionBtn("Hide", () => hideMut(id).unwrap(), "bg-yellow-500 hover:bg-yellow-600", <EyeOff className="h-4 w-4" />, hideState.isLoading)}
+                {actionBtn("Display", () => displayMut(id).unwrap(), "bg-emerald-600 hover:bg-emerald-700", <Eye className="h-4 w-4" />, displayState.isLoading)}
+                {actionBtn("Freeze", () => freezeMut(id).unwrap(), "bg-blue-600 hover:bg-blue-700", <Snowflake className="h-4 w-4" />, freezeState.isLoading)}
+                {actionBtn("Release", () => releaseMut(id).unwrap(), "bg-green-600 hover:bg-green-700", <ExternalLink className="h-4 w-4" />, releaseState.isLoading)}
               </div>
             </div>
           </div>

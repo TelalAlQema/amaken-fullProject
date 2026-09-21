@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { uploadLogo, removeLogo } from "@/lib/api";
+import { useUploadLogoMutation, useRemoveLogoMutation } from "@/lib/redux/api";
 
 export default function CompanyLogoPage() {
   const { user, setUser } = useAuth();
@@ -15,6 +15,8 @@ export default function CompanyLogoPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [uploadLogo] = useUploadLogoMutation();
+  const [removeLogo] = useRemoveLogoMutation();
 
   if (!user) return null;
 
@@ -46,7 +48,9 @@ export default function CompanyLogoPage() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await uploadLogo(selectedFile);
+      const fd = new FormData();
+      fd.append("logo", selectedFile);
+      const data = await uploadLogo(fd).unwrap();
       if (data.success) {
         setUser({ ...user, ucompanylogo: data.data!.image });
         setSuccess("Company logo updated. It will be reviewed by our team.");
@@ -65,7 +69,7 @@ export default function CompanyLogoPage() {
     setLoading(true);
     setError("");
     try {
-      const { data } = await removeLogo();
+      const data = await removeLogo().unwrap();
       if (data.success) {
         setUser({ ...user, ucompanylogo: "" });
         setSuccess("Company logo removed successfully");

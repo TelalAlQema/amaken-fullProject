@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
-import { changeAdminPassword } from "@/lib/admin-api";
+import { useChangeAdminPasswordMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Eye, EyeOff, Save } from "lucide-react";
 
 export default function AdminChangePasswordPage() {
@@ -26,28 +25,25 @@ export default function AdminChangePasswordPage() {
   const allChecks = Object.values(checks).every(Boolean);
   const passwordsMatch = newPassword === confirmPassword && confirmPassword.length > 0;
 
-  const mutation = useMutation({
-    mutationFn: () => changeAdminPassword(currentPassword, newPassword),
-    onSuccess: (res) => {
-      if (res.data.success) {
-        setSuccess("Password changed successfully");
-        setError("");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      }
-    },
-    onError: (err: Error) => {
-      setError(err.message || "Password change failed");
-      setSuccess("");
-    },
-  });
+  const [mutation, mutationState] = useChangeAdminPasswordMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    mutation.mutate();
+    mutation({ currentPassword, newPassword })
+      .unwrap()
+      .then(() => {
+        setSuccess("Password changed successfully");
+        setError("");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      })
+      .catch((err) => {
+        setError(err?.data?.message || err?.message || "Password change failed");
+        setSuccess("");
+      });
   };
 
   return (
@@ -136,11 +132,11 @@ export default function AdminChangePasswordPage() {
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={mutation.isPending || !allChecks || !passwordsMatch}
+            disabled={mutationState.isLoading || !allChecks || !passwordsMatch}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {mutation.isPending ? "Changing..." : "Change Password"}
+            {mutationState.isLoading ? "Changing..." : "Change Password"}
           </button>
           <Link
             href="/admin/profile"

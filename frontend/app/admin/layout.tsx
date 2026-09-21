@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import { AdminAuthProvider, useAdminAuth } from "@/components/providers/AdminAuthProvider";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { api } from "@/lib/api";
+import { useGetSidebarCountsQuery } from "@/lib/redux/adminApi";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,24 +24,24 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const isAuthPage =
     pathname === "/admin/login" || pathname === "/admin/login/email";
 
-  const { data: countsData } = useQuery({
-    queryKey: ["admin-sidebar-counts"],
-    queryFn: async () => {
-      const { data } = await api.get("/admin/dashboard/sidebar-counts");
-      return data.success ? data.data : {};
-    },
-    enabled: isAuthenticated,
+  if (isAuthPage) {
+    return <>{children}</>;
+  }
+
+  const { data: countsData } = useGetSidebarCountsQuery(undefined, {
+    skip: !isAuthenticated,
   });
+
+  const sidebarCounts =
+    countsData?.success && countsData.data
+      ? (countsData.data as Record<string, number>)
+      : {};
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/admin/login");
     }
   }, [isLoading, isAuthenticated, router]);
-
-  if (isAuthPage) {
-    return <>{children}</>;
-  }
 
   if (isLoading) {
     return (
@@ -59,7 +58,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar
-        counts={(countsData as Record<string, number>) || {}}
+        counts={sidebarCounts}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

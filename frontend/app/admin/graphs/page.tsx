@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {
+  useGetDashboardStatsQuery,
+  useGetDashboardChartsQuery,
+} from "@/lib/redux/adminApi";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -41,15 +43,11 @@ const COLORS = {
 const cardClass = "rounded-xl bg-white shadow-sm border border-gray-100 p-6";
 
 export default function GraphsPage() {
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["admin-dashboard-stats"],
-    queryFn: () => api.get("/admin/dashboard/stats").then((r) => r.data),
-  });
+  const { data: statsResp, isLoading: statsLoading } = useGetDashboardStatsQuery();
+  const { data: chartsResp, isLoading: chartsLoading } = useGetDashboardChartsQuery({});
 
-  const { data: charts, isLoading: chartsLoading } = useQuery({
-    queryKey: ["admin-dashboard-charts"],
-    queryFn: () => api.get("/admin/dashboard/charts").then((r) => r.data),
-  });
+  const stats = statsResp?.data as Record<string, number> | undefined;
+  const charts = chartsResp?.data as Record<string, number> | undefined;
 
   const loading = statsLoading || chartsLoading;
 

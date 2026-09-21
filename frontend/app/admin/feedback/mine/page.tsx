@@ -1,7 +1,9 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import {
+  useGetMyFeedbackQuery,
+  useDeleteFeedbackMutation,
+} from "@/lib/redux/api";
 import { Star, Trash2 } from "lucide-react";
 
 interface Feedback {
@@ -28,25 +30,15 @@ function StarRating({ rating = 0 }: { rating: number }) {
 }
 
 export default function MyFeedbackPage() {
-  const queryClient = useQueryClient();
+  const { data, isLoading } = useGetMyFeedbackQuery();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-my-feedback"],
-    queryFn: () => api.get("/feedback/my").then((r) => r.data),
-  });
+  const [deleteMutation, deleteState] = useDeleteFeedbackMutation();
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/feedback/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-my-feedback"] });
-    },
-  });
-
-  const items: Feedback[] = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
+  const items: Feedback[] = (data?.data as unknown as Feedback[]) ?? [];
 
   const handleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this feedback?")) return;
-    deleteMutation.mutate(id);
+    deleteMutation(id).unwrap();
   };
 
   return (

@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminCreateState, adminUpdateState, adminDeleteState } from "@/lib/admin-api";
-import type { State, ApiResponse } from "@amaken/shared";
+import { useGetStatesQuery } from "@/lib/redux/api";
+import {
+  useAdminCreateStateMutation,
+  useAdminUpdateStateMutation,
+  useAdminDeleteStateMutation,
+} from "@/lib/redux/adminApi";
+import type { State } from "@amaken/shared";
 import { Plus, Pencil, Trash2, MapPin, Check, X } from "lucide-react";
 
 function ConfirmDialog({
@@ -46,42 +49,16 @@ function ConfirmDialog({
 }
 
 export default function AdminStatesPage() {
-  const queryClient = useQueryClient();
   const [newName, setNewName] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: response, isLoading } = useQuery<ApiResponse<State[]>>({
-    queryKey: ["admin-states"],
-    queryFn: () => api.get("/states").then((r) => r.data),
-  });
+  const { data: response, isLoading } = useGetStatesQuery();
 
-  const createMutation = useMutation({
-    mutationFn: () => adminCreateState(newName),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-states"] });
-      setNewName("");
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, sname }: { id: number; sname: string }) =>
-      adminUpdateState(id, sname),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-states"] });
-      setEditId(null);
-      setEditName("");
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteState(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-states"] });
-      setDeleteId(null);
-    },
-  });
+  const [createMutation, createState] = useAdminCreateStateMutation();
+  const [updateMutation] = useAdminUpdateStateMutation();
+  const [deleteMutation] = useAdminDeleteStateMutation();
 
   const items: State[] = response?.data ?? [];
 
@@ -92,7 +69,9 @@ export default function AdminStatesPage() {
         title="Delete State"
         message="This action cannot be undone. Are you sure you want to delete this state?"
         onConfirm={() => {
-          if (deleteId !== null) deleteMutation.mutate(deleteId);
+          if (deleteId !== null) {
+            deleteMutation(deleteId).unwrap().then(() => setDeleteId(null));
+          }
         }}
         onCancel={() => setDeleteId(null)}
       />
@@ -113,23 +92,25 @@ export default function AdminStatesPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && newName.trim()) createMutation.mutate();
+              if (e.key === "Enter" && newName.trim())
+                createMutation({ sname: newName }).unwrap().then(() => setNewName(""));
             }}
             placeholder="Enter state name"
             className="flex-1 rounded-lg border border-gray-200 py-2.5 px-3 text-sm focus:border-[#17c788] focus:outline-none focus:ring-1 focus:ring-[#17c788]"
           />
           <button
             onClick={() => {
-              if (newName.trim()) createMutation.mutate();
+              if (newName.trim())
+                createMutation({ sname: newName }).unwrap().then(() => setNewName(""));
             }}
-            disabled={!newName.trim() || createMutation.isPending}
+            disabled={!newName.trim() || createState.isLoading}
             className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
           >
             <Plus className="h-4 w-4" />
-            {createMutation.isPending ? "Adding..." : "Add"}
+            {createState.isLoading ? "Adding..." : "Add"}
           </button>
         </div>
-        {createMutation.isError && (
+        {createState.isError && (
           <p className="mt-2 text-sm text-red-600">Failed to add state.</p>
         )}
       </div>
@@ -190,7 +171,12 @@ export default function AdminStatesPage() {
                           onChange={(e) => setEditName(e.target.value)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && editName.trim()) {
-                              updateMutation.mutate({ id: state.sid, sname: editName });
+                              updateMutation({ id: state.sid, sname: editName })
+                                .unwrap()
+                                .then(() => {
+                                  setEditId(null);
+                                  setEditName("");
+                                });
                             }
                             if (e.key === "Escape") {
                               setEditId(null);
@@ -211,7 +197,12 @@ export default function AdminStatesPage() {
                           <button
                             onClick={() => {
                               if (editName.trim()) {
-                                updateMutation.mutate({ id: state.sid, sname: editName });
+                                updateMutation({ id: state.sid, sname: editName })
+                                  .unwrap()
+                                  .then(() => {
+                                    setEditId(null);
+                                    setEditName("");
+                                  });
                               }
                             }}
                             className="rounded-lg p-1.5 text-green-600 hover:bg-green-50"

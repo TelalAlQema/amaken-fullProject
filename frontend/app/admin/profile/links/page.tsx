@@ -3,16 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
-import { getAdminProfile, updateAdminLinks } from "@/lib/admin-api";
-import type { Admin } from "@amaken/shared";
+import { useGetAdminProfileQuery, useUpdateAdminLinksMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Save } from "lucide-react";
 
 export default function AdminSocialLinksPage() {
   const { setAdmin } = useAdminAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [links, setLinks] = useState({
@@ -24,13 +21,8 @@ export default function AdminSocialLinksPage() {
     twitter: "",
   });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-profile"],
-    queryFn: async () => {
-      const { data } = await getAdminProfile();
-      return data.success ? (data.data as Admin) : null;
-    },
-  });
+  const { data: response, isLoading } = useGetAdminProfileQuery();
+  const data = response?.data ?? null;
 
   useEffect(() => {
     if (data) {
@@ -45,10 +37,18 @@ export default function AdminSocialLinksPage() {
     }
   }, [data]);
 
-  const mutation = useMutation({
-    mutationFn: (payload: Record<string, string>) => updateAdminLinks(payload),
-    onSuccess: (res) => {
-      if (res.data.success) {
+  const [mutation, mutationState] = useUpdateAdminLinksMutation();
+
+  const update = (field: string, value: string) =>
+    setLinks((prev) => ({ ...prev, [field]: value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    mutation(links)
+      .unwrap()
+      .then(() => {
         setAdmin({
           ...data!,
           website: links.website,
@@ -58,25 +58,13 @@ export default function AdminSocialLinksPage() {
           atiktok: links.tiktok,
           atwitter: links.twitter,
         });
-        queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
         setSuccess("Social links updated successfully");
         setError("");
-      }
-    },
-    onError: (err: Error) => {
-      setError(err.message || "Update failed");
-      setSuccess("");
-    },
-  });
-
-  const update = (field: string, value: string) =>
-    setLinks((prev) => ({ ...prev, [field]: value }));
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    mutation.mutate(links);
+      })
+      .catch((err) => {
+        setError(err?.data?.message || err?.message || "Update failed");
+        setSuccess("");
+      });
   };
 
   if (isLoading) {
@@ -131,11 +119,11 @@ export default function AdminSocialLinksPage() {
         <div className="flex gap-3 pt-4">
           <button
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutationState.isLoading}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
-            {mutation.isPending ? "Saving..." : "Save Links"}
+            {mutationState.isLoading ? "Saving..." : "Save Links"}
           </button>
           <Link
             href="/admin/profile"

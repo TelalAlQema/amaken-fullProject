@@ -1,41 +1,29 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { getMyProperties, deleteProperty } from "@/lib/api";
+import { useGetMyPropertiesQuery, useDeletePropertyMutation } from "@/lib/redux/api";
 import type { Property } from "@amaken/shared";
 
 export default function MyPropertiesPage() {
   const { user } = useAuth();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchProperties = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params: Record<string, string | number> = { page, limit: 10 };
-      if (statusFilter) params.status = statusFilter;
-      const { data } = await getMyProperties(params);
-      if (data.success && data.data) {
-        setProperties(data.data as Property[]);
-        if (data.pagination) setTotalPages(data.pagination.totalPages);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [page, statusFilter]);
+  const params: Record<string, string | number> = { page, limit: 10 };
+  if (statusFilter) params.status = statusFilter;
 
-  useEffect(() => { fetchProperties(); }, [fetchProperties]);
+  const { data, isLoading } = useGetMyPropertiesQuery(params);
+  const [deleteProperty] = useDeletePropertyMutation();
+
+  const properties = (data?.success ? data.data : []) as Property[];
+  const totalPages = data?.pagination?.totalPages ?? 1;
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this property?")) return;
     try {
-      await deleteProperty(id);
-      fetchProperties();
+      await deleteProperty(id).unwrap();
     } catch {
       alert("Failed to delete property");
     }
@@ -63,7 +51,7 @@ export default function MyPropertiesPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-12 text-center text-amaken-gray">Loading properties...</div>
       ) : properties.length === 0 ? (
         <div className="py-12 text-center text-amaken-gray">

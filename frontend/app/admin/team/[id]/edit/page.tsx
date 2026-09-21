@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
-import { api } from "@/lib/api";
-import { adminUpdateTeamMember } from "@/lib/admin-api";
-import type { TeamMember, ApiResponse } from "@amaken/shared";
+import { useGetTeamMembersQuery } from "@/lib/redux/api";
+import { useAdminUpdateTeamMemberMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
@@ -49,10 +47,7 @@ export default function EditTeamMemberPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  const { data: response, isLoading: fetching } = useQuery<ApiResponse<TeamMember[]>>({
-    queryKey: ["admin-team"],
-    queryFn: () => api.get("/team").then((r) => r.data),
-  });
+  const { data: response, isLoading: fetching } = useGetTeamMembersQuery();
 
   const member = (response?.data ?? []).find((m) => m.id === id);
 
@@ -93,17 +88,18 @@ export default function EditTeamMemberPage() {
     }
   };
 
-  const mutation = useMutation({
-    mutationFn: () => {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => {
-        if (v) fd.append(k, v);
-      });
-      if (file) fd.append("image", file);
-      return adminUpdateTeamMember(id, fd);
-    },
-    onSuccess: () => router.push("/admin/team"),
-  });
+  const [mutation, mutationState] = useAdminUpdateTeamMemberMutation();
+
+  const handleSubmit = () => {
+    const fd = new FormData();
+    Object.entries(form).forEach(([k, v]) => {
+      if (v) fd.append(k, v);
+    });
+    if (file) fd.append("image", file);
+    mutation({ id, formData: fd })
+      .unwrap()
+      .then(() => router.push("/admin/team"));
+  };
 
   if (fetching) {
     return (
@@ -332,18 +328,18 @@ export default function EditTeamMemberPage() {
           {/* Submit */}
           <div className="flex items-center gap-3 border-t border-gray-100 pt-6">
             <button
-              onClick={() => mutation.mutate()}
+              onClick={handleSubmit}
               disabled={
                 !form.fname ||
                 !form.lname ||
                 !form.email ||
                 !form.position ||
-                mutation.isPending
+                mutationState.isLoading
               }
               className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
             >
               <Upload className="h-4 w-4" />
-              {mutation.isPending ? "Saving..." : "Save Changes"}
+              {mutationState.isLoading ? "Saving..." : "Save Changes"}
             </button>
             <Link
               href="/admin/team"
@@ -353,7 +349,7 @@ export default function EditTeamMemberPage() {
             </Link>
           </div>
 
-          {mutation.isError && (
+          {mutationState.isError && (
             <p className="text-sm text-red-600">
               Failed to update team member. Please try again.
             </p>

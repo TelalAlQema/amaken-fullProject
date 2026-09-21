@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Search,
@@ -11,24 +10,15 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { adminListProperties, adminDeleteProperty } from "@/lib/admin-api";
+import {
+  useAdminListPropertiesQuery,
+  useAdminDeletePropertyMutation,
+} from "@/lib/redux/adminApi";
 import DataTable from "@/components/admin/DataTable";
 import type { Property } from "@amaken/shared";
 import { PROPERTY_TYPES, SELLING_TYPES, PROPERTY_STATUS } from "@amaken/shared";
 
-interface PropertiesResponse {
-  success: boolean;
-  data: Property[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 export default function AdminPropertiesPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -45,29 +35,16 @@ export default function AdminPropertiesPage() {
     setPage(1);
   }, [debouncedSearch, statusFilter, typeFilter, stypeFilter]);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["admin-properties", page, debouncedSearch, statusFilter, typeFilter, stypeFilter],
-    queryFn: () =>
-      adminListProperties({
-        page,
-        limit: 20,
-        search: debouncedSearch || undefined,
-        status: statusFilter || undefined,
-        type: typeFilter || undefined,
-        stype: stypeFilter || undefined,
-      }).then((r) => ({
-        success: r.data.success,
-        data: (r.data.data as Property[]) ?? [],
-        pagination: r.data.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
-      })),
+  const { data, isLoading } = useAdminListPropertiesQuery({
+    page,
+    limit: 20,
+    search: debouncedSearch || undefined,
+    status: statusFilter || undefined,
+    type: typeFilter || undefined,
+    stype: stypeFilter || undefined,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteProperty(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-properties"] });
-    },
-  });
+  const [deleteMutation, deleteState] = useAdminDeletePropertyMutation();
 
   const properties = data?.data || [];
   const pagination = data?.pagination;
@@ -75,7 +52,7 @@ export default function AdminPropertiesPage() {
   const handleDelete = useCallback(
     (item: Property) => {
       if (window.confirm(`Delete property "${item.title}"? This cannot be undone.`)) {
-        deleteMutation.mutate(item.id);
+        deleteMutation(item.id).unwrap();
       }
     },
     [deleteMutation],
@@ -184,7 +161,7 @@ export default function AdminPropertiesPage() {
           </Link>
           <button
             onClick={() => handleDelete(item)}
-            disabled={deleteMutation.isPending}
+            disabled={deleteState.isLoading}
             className="rounded p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-50"
             title="Delete"
           >

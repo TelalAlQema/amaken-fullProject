@@ -5,9 +5,11 @@ interface BreadcrumbBannerProps {
   subtitle?: string;
   bgImage?: string;
   crumbs?: { label: string; href?: string }[];
+  as?: "h1" | "h2";
 }
 
-export default function BreadcrumbBanner({ title, subtitle, bgImage = "/images/breadcromb.jpg", crumbs = [] }: BreadcrumbBannerProps) {
+export default function BreadcrumbBanner({ title, subtitle, bgImage = "/images/breadcromb.jpg", crumbs = [], as = "h1" }: BreadcrumbBannerProps) {
+  const Heading = as;
   return (
     <section
       className="relative flex min-h-[260px] items-center bg-cover bg-center py-16 md:min-h-[320px]"
@@ -30,7 +32,7 @@ export default function BreadcrumbBanner({ title, subtitle, bgImage = "/images/b
             ))}
           </nav>
         )}
-        <h1 className="text-3xl font-bold text-white md:text-4xl">{title}</h1>
+        <Heading className="text-3xl font-bold text-white md:text-4xl">{title}</Heading>
         {subtitle && <p className="mt-2 text-gray-300">{subtitle}</p>}
       </div>
     </section>

@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminDeleteAbout } from "@/lib/admin-api";
-import type { About, ApiResponse } from "@amaken/shared";
+import { useGetAboutContentQuery } from "@/lib/redux/api";
+import { useAdminDeleteAboutMutation } from "@/lib/redux/adminApi";
+import type { About } from "@amaken/shared";
 import { Plus, Pencil, Trash2, FileText, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -47,21 +46,11 @@ function ConfirmDialog({
 }
 
 export default function AdminAboutPage() {
-  const queryClient = useQueryClient();
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: response, isLoading } = useQuery<ApiResponse<About[]>>({
-    queryKey: ["admin-about"],
-    queryFn: () => api.get("/about").then((r) => r.data),
-  });
+  const { data: response, isLoading } = useGetAboutContentQuery();
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => adminDeleteAbout(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-about"] });
-      setDeleteId(null);
-    },
-  });
+  const [deleteMutation] = useAdminDeleteAboutMutation();
 
   const items: About[] = response?.data ?? [];
 
@@ -72,7 +61,9 @@ export default function AdminAboutPage() {
         title="Delete About Content"
         message="This action cannot be undone. Are you sure you want to delete this content?"
         onConfirm={() => {
-          if (deleteId !== null) deleteMutation.mutate(deleteId);
+          if (deleteId !== null) {
+            deleteMutation(deleteId).unwrap().then(() => setDeleteId(null));
+          }
         }}
         onCancel={() => setDeleteId(null)}
       />

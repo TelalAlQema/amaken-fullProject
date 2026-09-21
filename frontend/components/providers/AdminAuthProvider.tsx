@@ -1,9 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import type { Admin } from "@amaken/shared";
-import { api } from "@/lib/api";
+import {
+  useAdminLoginMutation,
+  useGetAdminProfileQuery,
+} from "@/lib/redux/adminApi";
 
 interface AdminAuthContextType {
   admin: Admin | null;
@@ -18,52 +21,43 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const [adminLogin] = useAdminLoginMutation();
 
-  const fetchAdmin = useCallback(async () => {
-    const token = localStorage.getItem("admin_access_token") || localStorage.getItem("access_token");
-    if (!token) {
-      setIsLoading(false);
-      return;
+  const { data: profileData, isLoading: profileLoading } = useGetAdminProfileQuery(
+    undefined,
+    {
+      skip:
+        typeof window === "undefined" ||
+        (!localStorage.getItem("admin_access_token") &&
+          !localStorage.getItem("access_token")),
     }
-    try {
-      const { data } = await api.get("/admin/profile");
-      if (data.success && data.data) {
-        setAdmin(data.data as Admin);
-      } else {
-        localStorage.removeItem("admin_access_token");
-        localStorage.removeItem("admin_refresh_token");
-        localStorage.removeItem("admin_pin_verified");
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-      }
-    } catch {
-      localStorage.removeItem("admin_access_token");
-      localStorage.removeItem("admin_refresh_token");
-      localStorage.removeItem("admin_pin_verified");
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  );
 
   useEffect(() => {
-    fetchAdmin();
-  }, [fetchAdmin]);
-
-  const login = async (email: string, password: string) => {
-    const { data } = await api.post("/admin/login", { email, password });
-    if (data.success && data.data) {
-      localStorage.setItem("admin_access_token", data.data.accessToken);
-      localStorage.setItem("admin_refresh_token", data.data.refreshToken);
-      localStorage.setItem("access_token", data.data.accessToken);
-      localStorage.setItem("refresh_token", data.data.refreshToken);
-      localStorage.setItem("admin_pin_verified", "true");
-      setAdmin(data.data.admin);
+    if (profileData?.success && profileData.data) {
+      setAdmin(profileData.data);
     }
-  };
+  }, [profileData]);
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const result = await adminLogin({ email, password });
+      const payload = (result as { data?: { data?: { accessToken: string; refreshToken: string; admin: Admin } } }).data;
+      if (payload?.data) {
+        localStorage.setItem("admin_access_token", payload.data.accessToken);
+        localStorage.setItem("admin_refresh_token", payload.data.refreshToken);
+        localStorage.setItem("access_token", payload.data.accessToken);
+        localStorage.setItem("refresh_token", payload.data.refreshToken);
+        localStorage.setItem("admin_pin_verified", "true");
+        setAdmin(payload.data.admin);
+        return;
+      }
+      const err = (result as { error?: { data?: { error?: { message?: string } } } }).error;
+      throw new Error(err?.data?.error?.message || "Login failed. Please check your credentials.");
+    },
+    [adminLogin]
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem("admin_access_token");
@@ -79,7 +73,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     <AdminAuthContext.Provider
       value={{
         admin,
-        isLoading,
+        isLoading: profileLoading && !admin,
         isAuthenticated: !!admin,
         login,
         logout,

@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { adminListLeads } from "@/lib/admin-api";
+import {
+  adminApi,
+  useAdminListLeadsQuery,
+  useDeleteLeadMutation,
+  useBulkDeleteLeadsMutation,
+} from "@/lib/redux/adminApi";
+import { store } from "@/lib/redux/store";
 import {
   Trash2,
   ChevronLeft,
@@ -33,7 +37,6 @@ interface Pagination {
 }
 
 export default function LeadsPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [from, setFrom] = useState("");
@@ -46,30 +49,22 @@ export default function LeadsPage() {
     [page, limit, from, to]
   );
 
-  const { data: response, isLoading } = useQuery({
-    queryKey: ["admin-leads", params],
-    queryFn: () => adminListLeads(params),
-  });
+  const { data: response, isLoading } = useAdminListLeadsQuery(params);
 
-  const singleDeleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/admin/leads/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
-      setSelectedIds(new Set());
-    },
-  });
+  const [singleDeleteMutation] = useDeleteLeadMutation();
+  const [bulkDeleteMutation] = useBulkDeleteLeadsMutation();
 
-  const bulkDeleteMutation = useMutation({
-    mutationFn: (ids: number[]) => api.post("/admin/leads/bulk-delete", { ids }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
-      setSelectedIds(new Set());
-    },
-  });
-
-  const resultData = response?.data?.data as Record<string, unknown> | undefined;
-  const items: PropertyLead[] = (resultData?.items as PropertyLead[]) ?? (response?.data?.data as unknown as PropertyLead[]) ?? [];
-  const pagination: Pagination = (resultData?.pagination as Pagination) ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
+  const rawData = response?.data as unknown as
+    | PropertyLead[]
+    | { items?: PropertyLead[]; pagination?: Pagination }
+    | undefined;
+  const resultData = Array.isArray(rawData) ? undefined : rawData;
+  const items: PropertyLead[] =
+    (resultData?.items as PropertyLead[]) ??
+    (rawData as unknown as PropertyLead[]) ??
+    [];
+  const pagination: Pagination =
+    (resultData?.pagination as Pagination) ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
 
   const allSelected = items.length > 0 && items.every((l) => selectedIds.has(l.id));
 
@@ -92,23 +87,30 @@ export default function LeadsPage() {
 
   const handleSingleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this lead?")) return;
-    singleDeleteMutation.mutate(id);
+    singleDeleteMutation(id)
+      .unwrap()
+      .then(() => setSelectedIds(new Set()));
   };
 
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return;
     if (!confirm(`Delete ${selectedIds.size} selected lead(s)?`)) return;
-    bulkDeleteMutation.mutate(Array.from(selectedIds));
+    bulkDeleteMutation(Array.from(selectedIds))
+      .unwrap()
+      .then(() => setSelectedIds(new Set()));
   };
 
   const handleExport = async (mode: string) => {
     setShowExportMenu(false);
     try {
-      const response = await api.get("/admin/leads/export", {
-        params: { mode, page, limit: 50, from, to },
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const result = await store.dispatch(
+        adminApi.endpoints.exportLeads.initiate(
+          { mode, page, limit: 50, from: from || undefined, to: to || undefined },
+          { forceRefetch: true }
+        )
+      );
+      const blob = result.data as Blob;
+      const url = window.URL.createObjectURL(new Blob([blob]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", "property_leads.xls");

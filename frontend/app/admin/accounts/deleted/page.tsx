@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { deleteAccountRecord } from "@/lib/admin-api";
-import type { DelAccount, ApiResponse } from "@amaken/shared";
+import {
+  useListDeletedAccountsQuery,
+  useDeleteAccountRecordMutation,
+} from "@/lib/redux/adminApi";
+import type { DelAccount } from "@amaken/shared";
 import {
   Search,
   ChevronLeft,
@@ -56,26 +57,16 @@ function ConfirmDialog({
 }
 
 export default function DeletedAccountsPage() {
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const { data: response, isLoading } = useQuery<ApiResponse<DelAccount[]>>({
-    queryKey: ["admin-deleted-accounts", page],
-    queryFn: () =>
-      api
-        .get("/admin/accounts/deleted", { params: { page, limit: 50 } })
-        .then((r) => r.data),
+  const { data: response, isLoading } = useListDeletedAccountsQuery({
+    page,
+    limit: 50,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteAccountRecord(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-deleted-accounts"] });
-      setDeleteId(null);
-    },
-  });
+  const [deleteMutation] = useDeleteAccountRecordMutation();
 
   const items: DelAccount[] = response?.data ?? [];
   const pagination = response?.pagination;
@@ -96,7 +87,9 @@ export default function DeletedAccountsPage() {
         title="Delete Record"
         message="Are you sure you want to delete this record? This action cannot be undone."
         onConfirm={() => {
-          if (deleteId !== null) deleteMutation.mutate(deleteId);
+          if (deleteId !== null) {
+            deleteMutation(deleteId).unwrap().then(() => setDeleteId(null));
+          }
         }}
         onCancel={() => setDeleteId(null)}
       />

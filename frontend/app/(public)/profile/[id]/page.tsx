@@ -1,9 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { getUserProfile } from "@/lib/api";
+import { useGetUserProfileQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import StarRating from "@/components/shared/StarRating";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
@@ -13,13 +12,9 @@ export default function ProfileDetailPage() {
   const params = useParams();
   const id = Number(params.id);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["user", id],
-    queryFn: () => getUserProfile(id),
-    enabled: !!id,
-  });
+  const { data, isLoading } = useGetUserProfileQuery(id, { skip: !id });
 
-  const user: User | undefined = data?.data?.data as User | undefined;
+  const user: User | undefined = data?.data as User | undefined;
 
   if (isLoading) {
     return (

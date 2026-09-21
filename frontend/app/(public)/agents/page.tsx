@@ -1,20 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
-import { getProperties } from "@/lib/api";
+import { useGetPropertiesQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
 import type { Property } from "@amaken/shared";
 
 export default function AgentsPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["agents"],
-    queryFn: () => getProperties({ limit: 50, page: 1 }),
-  });
+  const { data, isLoading } = useGetPropertiesQuery({ limit: 50, page: 1 });
 
-  const properties: Property[] = data?.data?.data || [];
+  const properties: Property[] = data?.data || [];
 
   const agentMap = new Map<string, { properties: Property[]; email: string }>();
   properties.forEach((p) => {

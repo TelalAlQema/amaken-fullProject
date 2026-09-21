@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { createFeedback } from "@/lib/api";
+import { useCreateFeedbackMutation } from "@/lib/redux/api";
 
 export default function SubmitFeedbackPage() {
   const { user } = useAuth();
@@ -15,6 +15,7 @@ export default function SubmitFeedbackPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [createFeedback] = useCreateFeedbackMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,11 +27,11 @@ export default function SubmitFeedbackPage() {
     setSuccess("");
     setLoading(true);
     try {
-      const { data } = await createFeedback({
+      const data = await createFeedback({
         receive_email: receiverEmail,
         fdescription: content,
         rating,
-      });
+      }).unwrap();
       if (data.success) {
         setSuccess("Feedback submitted successfully");
         setTimeout(() => router.push("/feedback"), 1500);

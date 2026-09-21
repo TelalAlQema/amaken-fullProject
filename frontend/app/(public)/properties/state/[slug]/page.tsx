@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { getPropertiesByState } from "@/lib/api";
+import { useGetPropertiesByStateQuery } from "@/lib/redux/api";
 import PropertyCard from "@/components/shared/PropertyCard";
 import Pagination from "@/components/shared/Pagination";
 import EmptyState from "@/components/shared/EmptyState";
@@ -15,14 +14,13 @@ export default function StatePropertiesPage() {
   const slug = params.slug as string;
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["properties", "state", slug, page],
-    queryFn: () => getPropertiesByState(slug, { page, limit: 12 }),
-    enabled: !!slug,
-  });
+  const { data, isLoading } = useGetPropertiesByStateQuery(
+    { slug, params: { page, limit: 12 } },
+    { skip: !slug }
+  );
 
-  const properties = data?.data?.data || [];
-  const pagination = data?.data?.pagination;
+  const properties = data?.data || [];
+  const pagination = data?.pagination;
 
   return (
     <>
