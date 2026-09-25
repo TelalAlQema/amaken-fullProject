@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useListAdminAdminsQuery } from "@/lib/redux/adminApi";
 import type { Admin } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 import {
   Search,
   Users,
@@ -160,7 +161,7 @@ export default function AdminAdminsPage() {
                       <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
                         {admin.aimage ? (
                           <img
-                            src={admin.aimage}
+                            src={getAssetUrl(`/uploads/users/${admin.aimage}`)}
                             alt={admin.aname}
                             className="h-full w-full object-cover"
                           />

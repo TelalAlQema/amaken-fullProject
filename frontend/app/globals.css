@@ -108,6 +108,21 @@
     @apply relative flex min-h-[260px] items-center bg-cover bg-center py-16 md:min-h-[320px];
     background-color: var(--color-primary);
   }
+
+  .flaticon {
+    @apply inline-flex items-center justify-center leading-none;
+    font-family: 'Flaticon', sans-serif;
+    font-style: normal;
+    font-weight: normal;
+  }
+
+  .flaticon-seller::before { content: "\f10a"; }
+  .flaticon-rent::before { content: "\f105"; }
+  .flaticon-list::before { content: "\f107"; }
+  .flaticon-pin::before { content: "\f10e"; }
+  .flaticon-medal::before { content: "\f122"; }
+  .flaticon-reward::before { content: "\f108"; }
+  .flaticon-user::before { content: "\f123"; }
 }
 
 @layer utilities {
@@ -161,11 +176,10 @@
 /* Flaticon font */
 @font-face {
   font-family: 'Flaticon';
-  src: url('/fonts/flaticon/Flaticon.eot');
-  src: url('/fonts/flaticon/Flaticon.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/flaticon/Flaticon.woff2') format('woff2'),
-       url('/fonts/flaticon/Flaticon.woff') format('woff'),
-       url('/fonts/flaticon/Flaticon.ttf') format('truetype');
+  src: url('/fonts/flaticon/Flaticond41d.html?#iefix') format('embedded-opentype'),
+       url('/fonts/flaticon/Flaticon-2.html') format('woff2'),
+       url('/fonts/flaticon/Flaticon-3.html') format('woff'),
+       url('/fonts/flaticon/Flaticon-4.html') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;

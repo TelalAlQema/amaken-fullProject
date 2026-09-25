@@ -4,10 +4,11 @@ import Image from "next/image";
 import { useGetTeamMembersQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
+import { getAssetUrl } from "@/lib/utils";
 import type { TeamMember } from "@amaken/shared";
 
 function TeamCard({ member }: { member: TeamMember }) {
-  const imgSrc = member.image?.startsWith("http") ? member.image : `/uploads/properties/${member.image || "0.png"}`;
+  const imgSrc = getAssetUrl(`/uploads/properties/${member.image || "0.png"}`);
 
   return (
     <div className="group perspective">

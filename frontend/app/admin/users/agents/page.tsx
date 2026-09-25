@@ -7,6 +7,7 @@ import {
   useAdminDeleteUserMutation,
 } from "@/lib/redux/adminApi";
 import type { User } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 import {
   Search,
   ChevronLeft,
@@ -318,7 +319,7 @@ export default function AdminAgentsPage() {
                         <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
                           {user.uimage ? (
                             <img
-                              src={user.uimage}
+                              src={getAssetUrl(`/uploads/users/${user.uimage}`)}
                               alt={user.uname}
                               className="h-full w-full object-cover"
                             />

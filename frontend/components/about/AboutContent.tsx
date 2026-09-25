@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useGetAboutContentQuery } from "@/lib/redux/api";
 import Accordion from "@/components/shared/Accordion";
+import { getAssetUrl } from "@/lib/utils";
 import type { About } from "@amaken/shared";
 
 const FAQS = [
@@ -77,7 +78,7 @@ export default function AboutContent() {
                   {item.image && (
                     <div className="relative h-64 overflow-hidden rounded-lg">
                       <Image
-                        src={item.image.startsWith("http") ? item.image : `/uploads/properties/${item.image}`}
+                        src={getAssetUrl(`/uploads/properties/${item.image}`)}
                         alt={item.title || "Amaken Real Estate"}
                         fill
                         className="object-cover"

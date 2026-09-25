@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthVerifyOtpMutation, useAuthVerifyEmailMutation } from "@/lib/redux/api";
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || sessionStorage.getItem("reg_email") || "";
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -162,5 +162,13 @@ export default function VerifyOtpPage() {
         </Link>
       </div>
     </>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-amaken-gray">Loading...</div>}>
+      <VerifyOtpContent />
+    </Suspense>
   );
 }

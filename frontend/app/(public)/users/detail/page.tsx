@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useGetUserProfileQuery } from "@/lib/redux/api";
@@ -8,12 +9,13 @@ import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import PropertyCard from "@/components/shared/PropertyCard";
 import StarRating from "@/components/shared/StarRating";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
+import { getAssetUrl } from "@/lib/utils";
 import { CONTACT } from "@amaken/shared";
 import type { User } from "@amaken/shared";
 
-export default function UserProfilePage() {
-  const params = useParams();
-  const id = Number(params.id);
+function UserProfileContent() {
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
 
   const { data, isLoading } = useGetUserProfileQuery(id, { skip: !id });
 
@@ -37,7 +39,7 @@ export default function UserProfilePage() {
     );
   }
 
-  const avatarSrc = user.uimage?.startsWith("http") ? user.uimage : user.uimage ? `/uploads/users/${user.uimage}` : "/images/user/default-user.jpg";
+  const avatarSrc = user.uimage ? getAssetUrl(`/uploads/users/${user.uimage}`) : "/images/user/default-user.jpg";
 
   return (
     <>
@@ -115,5 +117,18 @@ export default function UserProfilePage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function UserProfilePage() {
+  return (
+    <Suspense fallback={
+      <>
+        <div className="h-64 animate-pulse bg-gray-200" />
+        <div className="container-custom py-12"><ProfileSkeleton /></div>
+      </>
+    }>
+      <UserProfileContent />
+    </Suspense>
   );
 }

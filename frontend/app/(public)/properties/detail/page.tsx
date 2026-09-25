@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useGetPropertyQuery, useGetPropertiesQuery, useSubmitLeadMutation } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import PropertyCard from "@/components/shared/PropertyCard";
 import { PropertyCardSkeleton } from "@/components/shared/Skeletons";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, getAssetUrl } from "@/lib/utils";
 import { CONTACT } from "@amaken/shared";
 import type { Property } from "@amaken/shared";
 
-export default function PropertyDetailPage() {
-  const params = useParams();
+function PropertyDetailContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const id = Number(params.id);
+  const id = Number(searchParams.get("id"));
 
   const [activeImage, setActiveImage] = useState(0);
   const [showLeadModal, setShowLeadModal] = useState(false);
@@ -61,7 +61,7 @@ export default function PropertyDetailPage() {
 
   const images = [property.pimage, property.pimage1, property.pimage2, property.pimage3, property.pimage4]
     .filter(Boolean)
-    .map((img) => img.startsWith("http") ? img : `/uploads/properties/${img}`);
+    .map((img) => getAssetUrl(img));
 
   const features: { key: string; value: string }[] = [];
   if (property.feature) {
@@ -230,7 +230,7 @@ export default function PropertyDetailPage() {
                     {[property.mapimage, property.topmapimage, property.groundmapimage].filter(Boolean).map((plan, i) => (
                       <div key={i} className="overflow-hidden rounded-lg border border-gray-200">
                         <Image
-                          src={plan.startsWith("http") ? plan : `/uploads/properties/${plan}`}
+                          src={getAssetUrl(plan)}
                           alt={`Floor Plan ${i + 1}`}
                           width={400}
                           height={300}
@@ -318,10 +318,10 @@ export default function PropertyDetailPage() {
                   <h3 className="mb-3 font-bold text-navy">Featured Properties</h3>
                   <div className="space-y-3">
                     {sidebarProperties.slice(0, 3).map((p) => (
-                      <Link key={p.id} href={`/properties/${p.id}`} className="flex gap-3 rounded p-2 transition-colors hover:bg-gray-50">
+                      <Link key={p.id} href={`/properties/detail?id=${p.id}`} className="flex gap-3 rounded p-2 transition-colors hover:bg-gray-50">
                         <div className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded">
                           <Image
-                            src={p.pimage?.startsWith("http") ? p.pimage : `/uploads/properties/${p.pimage || "0.png"}`}
+                            src={getAssetUrl(`/uploads/properties/${p.pimage || "0.png"}`)}
                             alt={p.title}
                             fill
                             className="object-cover"
@@ -439,5 +439,13 @@ export default function PropertyDetailPage() {
         </div>
       )}
     </>
+  );
+}
+
+export default function PropertyDetailPage() {
+  return (
+    <Suspense fallback={<div className="h-64 animate-pulse bg-gray-200" />}>
+      <PropertyDetailContent />
+    </Suspense>
   );
 }

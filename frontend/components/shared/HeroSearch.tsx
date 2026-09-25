@@ -24,9 +24,9 @@ export default function HeroSearch() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-6 w-full max-w-4xl rounded-lg border-2 border-primary/50 bg-white/95 p-4 backdrop-blur-sm md:p-6"
+      className="mt-6 w-full max-w-6xl rounded-lg border-2 border-secondary/50 bg-white/95 p-4 backdrop-blur-sm md:p-6"
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="sm:col-span-2 lg:col-span-1">
           <label className="mb-1 block text-xs font-medium text-amaken-gray">
             Location
@@ -115,9 +115,7 @@ export default function HeroSearch() {
             <option value="5 BHK">5 BHK</option>
           </select>
         </div>
-      </div>
-
-      <div className="mt-4 flex justify-center">
+         <div className="mt-4 flex justify-center">
         <button
           type="submit"
           className="flex items-center gap-2 rounded-lg bg-secondary px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600"
@@ -138,6 +136,9 @@ export default function HeroSearch() {
           Search Property
         </button>
       </div>
+      </div>
+
+     
     </form>
   );
 }

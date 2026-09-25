@@ -1,4 +1,9 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { SITE } from "@amaken/shared";
 
 export default function AuthLayout({
@@ -6,6 +11,15 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.replace("/profile");
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   return (
     <div className="min-h-[80vh] bg-gray-50 py-12">
       <div className="container-custom">

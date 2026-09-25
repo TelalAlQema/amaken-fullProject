@@ -15,6 +15,7 @@ import {
   useAdminDeletePropertyMutation,
 } from "@/lib/redux/adminApi";
 import DataTable from "@/components/admin/DataTable";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property } from "@amaken/shared";
 import { PROPERTY_TYPES, SELLING_TYPES, PROPERTY_STATUS } from "@amaken/shared";
 
@@ -71,7 +72,7 @@ export default function AdminPropertiesPage() {
       label: "Image",
       render: (item: Property) => (
         <img
-          src={item.pimage ? `/uploads/properties/${item.pimage}` : "/images/house-floor-plan.png"}
+          src={item.pimage ? getAssetUrl(`/uploads/properties/${item.pimage}`) : "/images/house-floor-plan.png"}
           alt={item.title}
           className="h-12 w-12 rounded object-cover"
         />
@@ -146,14 +147,14 @@ export default function AdminPropertiesPage() {
       render: (item: Property) => (
         <div className="flex items-center gap-2">
           <Link
-            href={`/admin/properties/${item.id}`}
+            href={`/admin/properties/detail?id=${item.id}`}
             className="rounded p-1.5 text-gray-500 hover:bg-gray-100"
             title="View"
           >
             <Eye className="h-4 w-4" />
           </Link>
           <Link
-            href={`/admin/properties/${item.id}/edit`}
+            href={`/admin/properties/edit?id=${item.id}`}
             className="rounded p-1.5 text-gray-500 hover:bg-gray-100"
             title="Edit"
           >

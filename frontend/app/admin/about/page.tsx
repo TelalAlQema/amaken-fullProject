@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGetAboutContentQuery } from "@/lib/redux/api";
 import { useAdminDeleteAboutMutation } from "@/lib/redux/adminApi";
 import type { About } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 import { Plus, Pencil, Trash2, FileText, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 
@@ -118,7 +119,7 @@ export default function AdminAboutPage() {
               {item.image && (
                 <div className="mb-4 overflow-hidden rounded-lg">
                   <img
-                    src={item.image}
+                    src={getAssetUrl(`/uploads/properties/${item.image}`)}
                     alt={item.title || "About image"}
                     className="h-40 w-full object-cover"
                   />
@@ -137,7 +138,7 @@ export default function AdminAboutPage() {
               </p>
               <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
                 <Link
-                  href={`/admin/about/${item.id}/edit`}
+                  href={`/admin/about/edit?id=${item.id}`}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <Pencil className="h-3.5 w-3.5" />

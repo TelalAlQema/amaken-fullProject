@@ -11,6 +11,7 @@ import {
 } from "@/lib/redux/adminApi";
 import type { ApiResponse } from "@amaken/shared";
 import { ArrowLeft, Upload, Trash2, X } from "lucide-react";
+import { getAssetUrl } from "@/lib/utils";
 
 export default function AdminChangePicturePage() {
   const { setAdmin } = useAdminAuth();
@@ -94,9 +95,7 @@ export default function AdminChangePicturePage() {
     );
   }
 
-  const currentImage = data.aimage
-    ? `/uploads/users/${data.aimage}`
-    : "/images/user/default-user.jpg";
+  const currentImage = getAssetUrl(data.aimage ? `/uploads/users/${data.aimage}` : "/images/user/default-user.jpg");
 
   return (
     <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">

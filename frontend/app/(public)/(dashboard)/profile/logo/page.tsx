@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUploadLogoMutation, useRemoveLogoMutation } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 
 export default function CompanyLogoPage() {
   const { user, setUser } = useAuth();
@@ -20,9 +21,7 @@ export default function CompanyLogoPage() {
 
   if (!user) return null;
 
-  const currentLogo = user.ucompanylogo
-    ? `/uploads/users/${user.ucompanylogo}`
-    : "/images/user/company-logo.png";
+  const currentLogo = getAssetUrl(user.ucompanylogo ? `/uploads/users/${user.ucompanylogo}` : "/images/user/company-logo.png");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

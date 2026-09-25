@@ -1,16 +1,17 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetFeedbackQuery } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
-export default function ViewFeedbackPage() {
+function ViewFeedbackContent() {
   const { user } = useAuth();
-  const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const id = Number(params.id);
+  const id = Number(searchParams.get("id"));
   const { data, isLoading } = useGetFeedbackQuery(id, { skip: !id });
 
   const fb = (data?.success ? data.data : null) as Feedback | null;
@@ -61,7 +62,7 @@ export default function ViewFeedbackPage() {
           </div>
           <div className="flex gap-3">
             {fb.send_email === user.uemail && (
-              <Link href={`/feedback/${fb.fid}/edit`} className="btn-primary">
+              <Link href={`/feedback/edit?id=${fb.fid}`} className="btn-primary">
                 Edit Feedback
               </Link>
             )}
@@ -72,5 +73,13 @@ export default function ViewFeedbackPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ViewFeedbackPage() {
+  return (
+    <Suspense fallback={<div className="rounded-lg bg-white p-6 shadow-md text-center text-amaken-gray">Loading...</div>}>
+      <ViewFeedbackContent />
+    </Suspense>
   );
 }

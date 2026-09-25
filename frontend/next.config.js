@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
   images: {
     remotePatterns: [
       {
@@ -7,7 +8,7 @@ const nextConfig = {
         hostname: "amaken-realestate.com",
       },
     ],
-    unoptimized: process.env.NODE_ENV === "development",
+    unoptimized: true,
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "date-fns"],

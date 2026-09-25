@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { getAssetUrl } from "@/lib/utils";
 
 const MENU_ITEMS = [
   { label: "My Profile", href: "/profile" },
@@ -23,7 +24,7 @@ export default function ProfileSidebar() {
   const { user, logout } = useAuth();
 
   const imageUrl = user?.uimage
-    ? `/uploads/users/${user.uimage}`
+    ? getAssetUrl(`/uploads/users/${user.uimage}`)
     : "/images/user/default-user.jpg";
 
   return (

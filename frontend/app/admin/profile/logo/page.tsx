@@ -11,6 +11,7 @@ import {
 } from "@/lib/redux/adminApi";
 import type { ApiResponse } from "@amaken/shared";
 import { ArrowLeft, Upload, Trash2, X } from "lucide-react";
+import { getAssetUrl } from "@/lib/utils";
 
 export default function AdminChangeLogoPage() {
   const { setAdmin } = useAdminAuth();
@@ -94,9 +95,7 @@ export default function AdminChangeLogoPage() {
     );
   }
 
-  const currentLogo = data.companylogo
-    ? `/uploads/users/${data.companylogo}`
-    : "/images/user/company-logo.png";
+  const currentLogo = getAssetUrl(data.companylogo ? `/uploads/users/${data.companylogo}` : "/images/user/company-logo.png");
 
   return (
     <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">

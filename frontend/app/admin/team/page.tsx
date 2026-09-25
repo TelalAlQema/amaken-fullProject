@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGetTeamMembersQuery } from "@/lib/redux/api";
 import { useAdminDeleteTeamMemberMutation } from "@/lib/redux/adminApi";
 import type { TeamMember } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 import { Plus, Pencil, Trash2, Users, Mail, Phone } from "lucide-react";
 import Link from "next/link";
 
@@ -136,7 +137,7 @@ export default function AdminTeamPage() {
                 <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
                   {member.image ? (
                     <img
-                      src={member.image}
+                      src={getAssetUrl(`/uploads/properties/${member.image}`)}
                       alt={`${member.fname} ${member.lname}`}
                       className="h-full w-full object-cover"
                     />
@@ -180,7 +181,7 @@ export default function AdminTeamPage() {
 
               <div className="mt-4 flex items-center gap-2 border-t border-gray-100 pt-4">
                 <Link
-                  href={`/admin/team/${member.id}/edit`}
+                  href={`/admin/team/edit?id=${member.id}`}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
                   <Pencil className="h-3.5 w-3.5" />

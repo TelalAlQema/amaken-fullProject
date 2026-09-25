@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -29,11 +29,12 @@ import {
   useAdminDeletePropertyMutation,
 } from "@/lib/redux/adminApi";
 import type { Property } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 
-export default function PropertyDetailPage() {
+function PropertyDetailContent() {
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const { data: propertyResponse, isLoading } = useGetPropertyQuery(id, {
@@ -123,7 +124,7 @@ export default function PropertyDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/admin/properties/${id}/edit`}
+            href={`/admin/properties/edit?id=${id}`}
             className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <Pencil className="h-4 w-4" /> Edit
@@ -173,12 +174,12 @@ export default function PropertyDetailPage() {
                 <button
                   key={img.key}
                   onClick={() =>
-                    setLightbox(`/uploads/properties/${img.src}`)
+                    setLightbox(getAssetUrl(`/uploads/properties/${img.src}`))
                   }
                   className="group relative overflow-hidden rounded-lg border border-gray-200"
                 >
                   <img
-                    src={`/uploads/properties/${img.src}`}
+                    src={getAssetUrl(`/uploads/properties/${img.src}`)}
                     alt={img.label}
                     className="h-32 w-full object-cover transition-transform group-hover:scale-105"
                   />
@@ -287,5 +288,20 @@ export default function PropertyDetailPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PropertyDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-gray-50 p-6 min-h-screen">
+        <div className="space-y-4">
+          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
+          <div className="h-64 animate-pulse rounded-xl bg-gray-200" />
+        </div>
+      </div>
+    }>
+      <PropertyDetailContent />
+    </Suspense>
   );
 }

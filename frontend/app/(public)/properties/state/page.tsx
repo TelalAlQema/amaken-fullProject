@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useGetPropertiesByStateQuery } from "@/lib/redux/api";
 import PropertyCard from "@/components/shared/PropertyCard";
 import Pagination from "@/components/shared/Pagination";
@@ -9,9 +9,9 @@ import EmptyState from "@/components/shared/EmptyState";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
 import { PropertyCardSkeleton } from "@/components/shared/Skeletons";
 
-export default function StatePropertiesPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+function StatePropertiesContent() {
+  const searchParams = useSearchParams();
+  const slug = searchParams.get("slug") || "";
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useGetPropertiesByStateQuery(
@@ -25,9 +25,9 @@ export default function StatePropertiesPage() {
   return (
     <>
       <BreadcrumbBanner
-        title={`Properties in ${decodeURIComponent(slug)}`}
-        subtitle={`Browse all properties in ${decodeURIComponent(slug)}`}
-        crumbs={[{ label: "Properties", href: "/properties" }, { label: decodeURIComponent(slug) }]}
+        title={`Properties in ${slug}`}
+        subtitle={`Browse all properties in ${slug}`}
+        crumbs={[{ label: "Properties", href: "/properties" }, { label: slug }]}
       />
 
       <section className="py-12">
@@ -50,7 +50,7 @@ export default function StatePropertiesPage() {
             </>
           ) : (
             <EmptyState
-              title={`No properties in ${decodeURIComponent(slug)}`}
+              title={`No properties in ${slug}`}
               description="Check back later or browse properties in other locations."
               actionLabel="Browse All Properties"
               actionHref="/properties"
@@ -59,5 +59,19 @@ export default function StatePropertiesPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function StatePropertiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="container-custom py-12">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => <PropertyCardSkeleton key={i} />)}
+        </div>
+      </div>
+    }>
+      <StatePropertiesContent />
+    </Suspense>
   );
 }

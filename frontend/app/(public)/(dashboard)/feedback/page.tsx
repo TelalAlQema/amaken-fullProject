@@ -57,7 +57,7 @@ export default function MyFeedbackPage() {
                 <tr key={fb.fid} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3 text-amaken-gray">{i + 1}</td>
                   <td className="px-4 py-3">
-                    <Link href={`/users/0?email=${encodeURIComponent(fb.receive_email)}`} className="font-medium text-navy hover:text-primary">
+                    <Link href={`/users/detail?id=0&email=${encodeURIComponent(fb.receive_email)}`} className="font-medium text-navy hover:text-primary">
                       {fb.receive_email}
                     </Link>
                   </td>
@@ -82,7 +82,7 @@ export default function MyFeedbackPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <Link href={`/feedback/${fb.fid}/edit`} className="text-primary hover:text-primary-600" title="Edit">
+                      <Link href={`/feedback/edit?id=${fb.fid}`} className="text-primary hover:text-primary-600" title="Edit">
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </Link>
                       <button onClick={() => handleDelete(fb.fid)} className="text-red-500 hover:text-red-600" title="Delete">

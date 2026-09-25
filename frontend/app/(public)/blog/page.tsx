@@ -63,7 +63,7 @@ export default function BlogPage() {
                         <span className="text-xs text-amaken-gray">{post.readTime}</span>
                       </div>
                       <h2 className="mb-2 text-lg font-bold text-navy">
-                        <Link href={`/blog/${post.slug}`} className="hover:text-primary transition-colors">
+                        <Link href={`/blog/detail?slug=${post.slug}`} className="hover:text-primary transition-colors">
                           {post.title}
                         </Link>
                       </h2>
@@ -73,7 +73,7 @@ export default function BlogPage() {
                         <span>•</span>
                         <span>{new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
                       </div>
-                      <Link href={`/blog/${post.slug}`} className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">
+                      <Link href={`/blog/detail?slug=${post.slug}`} className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">
                         Read More →
                       </Link>
                     </div>

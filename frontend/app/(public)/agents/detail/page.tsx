@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useGetPropertiesQuery } from "@/lib/redux/api";
@@ -10,18 +11,18 @@ import { ProfileSkeleton } from "@/components/shared/Skeletons";
 import { CONTACT } from "@amaken/shared";
 import type { Property } from "@amaken/shared";
 
-export default function AgentDetailPage() {
-  const params = useParams();
-  const agentEmail = params.id as string;
+function AgentDetailContent() {
+  const searchParams = useSearchParams();
+  const agentEmail = searchParams.get("id") || "";
 
   const { data, isLoading } = useGetPropertiesQuery({ limit: 50, page: 1 });
 
   const allProperties: Property[] = data?.data || [];
   const agentProperties = allProperties.filter(
-    (p) => p.aemail === decodeURIComponent(agentEmail) || p.email === decodeURIComponent(agentEmail)
+    (p) => p.aemail === agentEmail || p.email === agentEmail
   );
 
-  const agentName = decodeURIComponent(agentEmail).split("@")[0];
+  const agentName = agentEmail.split("@")[0];
 
   if (isLoading) {
     return (
@@ -54,7 +55,7 @@ export default function AgentDetailPage() {
               </div>
               <div className="ml-auto flex gap-2">
                 <a
-                  href={`mailto:${decodeURIComponent(agentEmail)}`}
+                  href={`mailto:${agentEmail}`}
                   className="rounded-full bg-primary/10 p-2.5 text-primary transition-colors hover:bg-primary hover:text-white"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,5 +92,18 @@ export default function AgentDetailPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function AgentDetailPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <div className="h-64 animate-pulse bg-gray-200" />
+        <div className="container-custom py-12"><ProfileSkeleton /></div>
+      </>
+    }>
+      <AgentDetailContent />
+    </Suspense>
   );
 }

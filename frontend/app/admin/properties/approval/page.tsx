@@ -9,6 +9,7 @@ import {
   useDisapprovePropertyMutation,
 } from "@/lib/redux/adminApi";
 import DataTable from "@/components/admin/DataTable";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property } from "@amaken/shared";
 
 export default function ApprovalPage() {
@@ -35,7 +36,7 @@ export default function ApprovalPage() {
       label: "Image",
       render: (item: Property) => (
         <img
-          src={item.pimage ? `/uploads/properties/${item.pimage}` : "/images/house-floor-plan.png"}
+          src={item.pimage ? getAssetUrl(`/uploads/properties/${item.pimage}`) : "/images/house-floor-plan.png"}
           alt={item.title}
           className="h-12 w-12 rounded object-cover"
         />
@@ -46,7 +47,7 @@ export default function ApprovalPage() {
       label: "Title",
       render: (item: Property) => (
         <Link
-          href={`/admin/properties/${item.id}`}
+          href={`/admin/properties/detail?id=${item.id}`}
           className="font-medium text-[#17c788] hover:underline"
         >
           {item.title}
@@ -91,7 +92,7 @@ export default function ApprovalPage() {
       render: (item: Property) => (
         <div className="flex items-center gap-2">
           <Link
-            href={`/admin/properties/${item.id}`}
+            href={`/admin/properties/detail?id=${item.id}`}
             className="rounded p-1.5 text-gray-500 hover:bg-gray-100"
             title="View"
           >

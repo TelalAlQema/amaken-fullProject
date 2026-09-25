@@ -25,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "top-10-areas-to-invest-in-dubai-2025",
     "dubai-rental-market-trends",
   ].map((slug) => ({
-    url: `${BASE_URL}/blog/${slug}`,
+    url: `${BASE_URL}/blog/detail?slug=${slug}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
     priority: 0.6,

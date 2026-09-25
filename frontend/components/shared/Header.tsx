@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { CONTACT, SITE } from "@amaken/shared";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { getAssetUrl } from "@/lib/utils";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -43,7 +44,7 @@ export default function Header() {
                   className="flex items-center gap-2 hover:text-white"
                 >
                   <img
-                    src={user?.uimage ? `/uploads/users/${user.uimage}` : "/images/user/default-user.jpg"}
+                    src={user?.uimage ? getAssetUrl(`/uploads/users/${user.uimage}`) : "/images/user/default-user.jpg"}
                     alt=""
                     className="h-6 w-6 rounded-full object-cover"
                   />

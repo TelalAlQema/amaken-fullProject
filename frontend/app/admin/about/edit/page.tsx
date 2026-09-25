@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGetAboutContentQuery } from "@/lib/redux/api";
 import { useAdminUpdateAboutMutation } from "@/lib/redux/adminApi";
 import { ArrowLeft, Upload, X } from "lucide-react";
 import Link from "next/link";
 
-export default function EditAboutPage() {
+function EditAboutContent() {
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -187,5 +187,23 @@ export default function EditAboutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EditAboutPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-gray-50 p-6 min-h-screen">
+        <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+          <div className="space-y-4">
+            <div className="h-5 w-48 animate-pulse rounded bg-gray-200" />
+            <div className="h-10 w-full animate-pulse rounded bg-gray-200" />
+            <div className="h-48 w-full animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+      </div>
+    }>
+      <EditAboutContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Upload, Save } from "lucide-react";
 import { useGetPropertyQuery, useUpdatePropertyMutation } from "@/lib/redux/api";
@@ -13,6 +13,7 @@ import {
   DECORATION_TYPES,
   CURRENCIES,
 } from "@amaken/shared";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property } from "@amaken/shared";
 
 const STEPS = [
@@ -106,10 +107,10 @@ function Select({
   );
 }
 
-export default function EditPropertyPage() {
+function EditPropertyContent() {
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>({
     title: "",
@@ -192,7 +193,7 @@ export default function EditPropertyPage() {
     });
     mutation({ id, formData: fd })
       .unwrap()
-      .then(() => router.push(`/admin/properties/${id}`));
+      .then(() => router.push(`/admin/properties/detail?id=${id}`));
   };
 
   if (isLoading || !formReady) {
@@ -228,7 +229,7 @@ export default function EditPropertyPage() {
     <div className="bg-gray-50 p-6 min-h-screen">
       <div className="mb-6">
         <Link
-          href={`/admin/properties/${id}`}
+          href={`/admin/properties/detail?id=${id}`}
           className="mb-2 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Property
@@ -360,7 +361,7 @@ export default function EditPropertyPage() {
                     <div className="space-y-2">
                       {img.src && (
                         <img
-                          src={`/uploads/properties/${img.src}`}
+                          src={getAssetUrl(`/uploads/properties/${img.src}`)}
                           alt={img.label}
                           className="h-24 w-full rounded-lg object-cover"
                         />
@@ -391,7 +392,7 @@ export default function EditPropertyPage() {
                     <div className="space-y-2">
                       {src && (
                         <img
-                          src={`/uploads/properties/${src}`}
+                          src={getAssetUrl(`/uploads/properties/${src}`)}
                           alt={label as string}
                           className="h-24 w-full rounded-lg object-cover"
                         />
@@ -468,5 +469,20 @@ export default function EditPropertyPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function EditPropertyPage() {
+  return (
+    <Suspense fallback={
+      <div className="bg-gray-50 p-6 min-h-screen">
+        <div className="space-y-4">
+          <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
+          <div className="h-64 animate-pulse rounded-xl bg-gray-200" />
+        </div>
+      </div>
+    }>
+      <EditPropertyContent />
+    </Suspense>
   );
 }

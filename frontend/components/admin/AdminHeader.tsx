@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Menu, LogOut, User } from "lucide-react";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
+import { getAssetUrl } from "@/lib/utils";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -70,7 +71,7 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
         <div className="flex items-center gap-2">
           {admin?.aimage ? (
             <img
-              src={`/uploads/admin/${admin.aimage}`}
+              src={getAssetUrl(`/uploads/users/${admin.aimage}`)}
               alt={admin.aname || "Admin"}
               className="h-8 w-8 rounded-full object-cover"
             />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetMyPropertiesQuery, useGetMyFeedbackQuery, useGetFeedbackAboutMeQuery, useDeactivateAccountMutation, useActivateAccountMutation, useDeleteAccountMutation } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property, Feedback } from "@amaken/shared";
 
 export default function ProfilePage() {
@@ -23,9 +24,7 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const imageUrl = user.uimage
-    ? `/uploads/users/${user.uimage}`
-    : "/images/user/default-user.jpg";
+  const imageUrl = getAssetUrl(user.uimage ? `/uploads/users/${user.uimage}` : "/images/user/default-user.jpg");
 
   return (
     <div className="space-y-6">
@@ -153,11 +152,11 @@ export default function ProfilePage() {
             {properties.slice(0, 5).map((p) => (
               <Link
                 key={p.id}
-                href={`/properties/${p.id}`}
+                href={`/properties/detail?id=${p.id}`}
                 className="flex items-center gap-4 rounded-lg border p-3 transition-colors hover:bg-gray-50"
               >
                 <img
-                  src={p.pimage ? `/uploads/properties/${p.pimage}` : "/images/house-floor-plan.png"}
+                  src={p.pimage ? getAssetUrl(`/uploads/properties/${p.pimage}`) : "/images/house-floor-plan.png"}
                   alt={p.title}
                   className="h-14 w-14 rounded object-cover"
                 />

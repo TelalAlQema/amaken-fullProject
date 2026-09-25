@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetMyPropertiesQuery, useDeletePropertyMutation } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property } from "@amaken/shared";
 
 export default function MyPropertiesPage() {
@@ -80,12 +81,12 @@ export default function MyPropertiesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={p.pimage ? `/uploads/properties/${p.pimage}` : "/images/house-floor-plan.png"}
+                          src={p.pimage ? getAssetUrl(`/uploads/properties/${p.pimage}`) : "/images/house-floor-plan.png"}
                           alt={p.title}
                           className="h-12 w-12 rounded object-cover"
                         />
                         <div>
-                          <Link href={`/properties/${p.id}`} className="font-medium text-navy hover:text-primary line-clamp-1">
+                          <Link href={`/properties/detail?id=${p.id}`} className="font-medium text-navy hover:text-primary line-clamp-1">
                             {p.title}
                           </Link>
                           <p className="text-xs text-amaken-gray">{p.location}</p>
@@ -104,10 +105,10 @@ export default function MyPropertiesPage() {
                     <td className="px-4 py-3 text-xs text-amaken-gray hidden md:table-cell">{p.date}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <Link href={`/properties/${p.id}`} className="text-primary hover:text-primary-600" title="View">
+                        <Link href={`/properties/detail?id=${p.id}`} className="text-primary hover:text-primary-600" title="View">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </Link>
-                        <Link href={`/submit-property/${p.id}/edit`} className="text-amber-500 hover:text-amber-600" title="Edit">
+                        <Link href={`/submit-property/edit?id=${p.id}`} className="text-amber-500 hover:text-amber-600" title="Edit">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </Link>
                         <button onClick={() => handleDelete(p.id)} className="text-red-500 hover:text-red-600" title="Delete">

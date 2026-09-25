@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useUploadAvatarMutation, useRemoveAvatarMutation } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 
 export default function ProfilePicturePage() {
   const { user, setUser } = useAuth();
@@ -20,9 +21,7 @@ export default function ProfilePicturePage() {
 
   if (!user) return null;
 
-  const currentImage = user.uimage
-    ? `/uploads/users/${user.uimage}`
-    : "/images/user/default-user.jpg";
+  const currentImage = getAssetUrl(user.uimage ? `/uploads/users/${user.uimage}` : "/images/user/default-user.jpg");
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

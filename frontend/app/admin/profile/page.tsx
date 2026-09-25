@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useGetAdminProfileQuery } from "@/lib/redux/adminApi";
 import { useAdminAuth } from "@/components/providers/AdminAuthProvider";
+import { getAssetUrl } from "@/lib/utils";
 import type { Admin } from "@amaken/shared";
 import {
   User,
@@ -32,9 +33,7 @@ export default function AdminProfilePage() {
     );
   }
 
-  const avatarUrl = data.aimage
-    ? `/uploads/users/${data.aimage}`
-    : "/images/user/default-user.jpg";
+  const avatarUrl = getAssetUrl(data.aimage ? `/uploads/users/${data.aimage}` : "/images/user/default-user.jpg");
 
   const infoItems = [
     { label: "Phone", value: data.aphone, icon: Phone },

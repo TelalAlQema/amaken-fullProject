@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetPropertyQuery, useUpdatePropertyMutation } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 import { PROPERTY_TYPES, SELLING_TYPES, BHK_OPTIONS, PLAN_TYPES, DECORATION_TYPES, CURRENCIES } from "@amaken/shared";
 
-export default function EditPropertyPage() {
+function EditPropertyContent() {
   const { user } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -49,14 +50,14 @@ export default function EditPropertyPage() {
         specialoffer: String(p.offer || 0),
       });
       const imgs: Record<string, string> = {};
-      if (p.pimage) imgs.aimage = `/uploads/properties/${p.pimage}`;
-      if (p.pimage1) imgs.aimage1 = `/uploads/properties/${p.pimage1}`;
-      if (p.pimage2) imgs.aimage2 = `/uploads/properties/${p.pimage2}`;
-      if (p.pimage3) imgs.aimage3 = `/uploads/properties/${p.pimage3}`;
-      if (p.pimage4) imgs.aimage4 = `/uploads/properties/${p.pimage4}`;
-      if (p.mapimage) imgs.fimage = `/uploads/properties/${p.mapimage}`;
-      if (p.topmapimage) imgs.fimage1 = `/uploads/properties/${p.topmapimage}`;
-      if (p.groundmapimage) imgs.fimage2 = `/uploads/properties/${p.groundmapimage}`;
+      if (p.pimage) imgs.aimage = getAssetUrl(`/uploads/properties/${p.pimage}`);
+      if (p.pimage1) imgs.aimage1 = getAssetUrl(`/uploads/properties/${p.pimage1}`);
+      if (p.pimage2) imgs.aimage2 = getAssetUrl(`/uploads/properties/${p.pimage2}`);
+      if (p.pimage3) imgs.aimage3 = getAssetUrl(`/uploads/properties/${p.pimage3}`);
+      if (p.pimage4) imgs.aimage4 = getAssetUrl(`/uploads/properties/${p.pimage4}`);
+      if (p.mapimage) imgs.fimage = getAssetUrl(`/uploads/properties/${p.mapimage}`);
+      if (p.topmapimage) imgs.fimage1 = getAssetUrl(`/uploads/properties/${p.topmapimage}`);
+      if (p.groundmapimage) imgs.fimage2 = getAssetUrl(`/uploads/properties/${p.groundmapimage}`);
       setImagePreviews(imgs);
     }
   }, [propertyData]);
@@ -194,5 +195,13 @@ export default function EditPropertyPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function EditPropertyPage() {
+  return (
+    <Suspense fallback={<div className="rounded-lg bg-white p-6 shadow-md text-center text-amaken-gray">Loading...</div>}>
+      <EditPropertyContent />
+    </Suspense>
   );
 }

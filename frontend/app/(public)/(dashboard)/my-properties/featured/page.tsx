@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetMyPropertiesQuery } from "@/lib/redux/api";
+import { getAssetUrl } from "@/lib/utils";
 import type { Property } from "@amaken/shared";
 
 export default function FeaturedPropertiesPage() {
@@ -32,12 +33,12 @@ export default function FeaturedPropertiesPage() {
               {properties.map((p) => (
                 <div key={p.id} className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center">
                   <img
-                    src={p.pimage ? `/uploads/properties/${p.pimage}` : "/images/house-floor-plan.png"}
+                    src={p.pimage ? getAssetUrl(`/uploads/properties/${p.pimage}`) : "/images/house-floor-plan.png"}
                     alt={p.title}
                     className="h-32 w-32 rounded object-cover"
                   />
                   <div className="flex-1">
-                    <Link href={`/properties/${p.id}`} className="font-heading text-lg font-bold text-navy hover:text-primary">
+                    <Link href={`/properties/detail?id=${p.id}`} className="font-heading text-lg font-bold text-navy hover:text-primary">
                       {p.title}
                     </Link>
                     <p className="mt-1 text-sm text-amaken-gray">{p.location}</p>
@@ -53,10 +54,10 @@ export default function FeaturedPropertiesPage() {
                     <p className="mt-2 text-lg font-bold text-primary">{p.price} {p.curr}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Link href={`/properties/${p.id}`} className="rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20">
+                    <Link href={`/properties/detail?id=${p.id}`} className="rounded-lg bg-primary/10 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/20">
                       View
                     </Link>
-                    <Link href={`/submit-property/${p.id}/edit`} className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100">
+                    <Link href={`/submit-property/edit?id=${p.id}`} className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-600 hover:bg-amber-100">
                       Edit
                     </Link>
                   </div>

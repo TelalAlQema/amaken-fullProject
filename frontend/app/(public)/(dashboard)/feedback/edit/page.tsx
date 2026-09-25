@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useGetFeedbackQuery, useUpdateFeedbackMutation } from "@/lib/redux/api";
 import type { Feedback } from "@amaken/shared";
 
-export default function EditFeedbackPage() {
+function EditFeedbackContent() {
   const { user } = useAuth();
-  const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const id = Number(params.id);
+  const id = Number(searchParams.get("id"));
   const { data: fbData, isLoading } = useGetFeedbackQuery(id, { skip: !id });
   const [updateFeedback] = useUpdateFeedbackMutation();
 
@@ -119,5 +119,13 @@ export default function EditFeedbackPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function EditFeedbackPage() {
+  return (
+    <Suspense fallback={<div className="rounded-lg bg-white p-6 shadow-md text-center text-amaken-gray">Loading...</div>}>
+      <EditFeedbackContent />
+    </Suspense>
   );
 }

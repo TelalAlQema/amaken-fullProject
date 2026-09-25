@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/components/providers/AuthProvider";
 import ProfileSidebar from "@/components/dashboard/ProfileSidebar";
 
 export default function DashboardLayout({
@@ -7,6 +10,28 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [isLoading, isAuthenticated, router, pathname]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[80vh] items-center justify-center bg-gray-50">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-[80vh] bg-gray-50 py-8">
       <div className="container-custom">

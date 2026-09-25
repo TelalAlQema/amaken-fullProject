@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthVerifyForgotOtpMutation, useAuthForgotPasswordMutation } from "@/lib/redux/api";
 
-export default function ForgotPasswordVerifyPage() {
+function ForgotPasswordVerifyContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || sessionStorage.getItem("reset_email") || "";
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -157,5 +157,13 @@ export default function ForgotPasswordVerifyPage() {
         )}
       </div>
     </>
+  );
+}
+
+export default function ForgotPasswordVerifyPage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-center text-amaken-gray">Loading...</div>}>
+      <ForgotPasswordVerifyContent />
+    </Suspense>
   );
 }

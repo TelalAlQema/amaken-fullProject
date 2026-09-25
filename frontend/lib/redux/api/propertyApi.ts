@@ -1,6 +1,21 @@
 import { baseApi } from "./baseApi";
 import type { ApiResponse, Property } from "@amaken/shared";
 
+type ListResponse<T> = {
+  success: boolean;
+  data?: {
+    properties: T;
+    pagination?: ApiResponse["pagination"];
+  };
+  error?: ApiResponse["error"];
+};
+
+const normalizeList = <T extends unknown[]>(response: ListResponse<T>): ApiResponse<T> => ({
+  ...response,
+  data: response.data?.properties ?? ([] as unknown as T),
+  pagination: response.data?.pagination,
+});
+
 export const propertyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProperties: builder.query<
@@ -9,6 +24,7 @@ export const propertyApi = baseApi.injectEndpoints({
     >({
       query: (params) =>
         params ? { url: "/properties", params } : { url: "/properties" },
+      transformResponse: (response: ListResponse<Property[]>) => normalizeList(response),
     }),
     getProperty: builder.query<ApiResponse<Property>, number>({
       query: (id) => ({ url: `/properties/${id}` }),
@@ -24,6 +40,7 @@ export const propertyApi = baseApi.injectEndpoints({
         url: `/properties/state/${slug}`,
         params,
       }),
+      transformResponse: (response: ListResponse<Property[]>) => normalizeList(response),
     }),
     getMyProperties: builder.query<
       ApiResponse<Property[]>,
@@ -33,6 +50,7 @@ export const propertyApi = baseApi.injectEndpoints({
         params
           ? { url: "/properties/my", params }
           : { url: "/properties/my" },
+      transformResponse: (response: ListResponse<Property[]>) => normalizeList(response),
       providesTags: ["MyProperty"],
     }),
     createProperty: builder.mutation<ApiResponse<Property>, FormData>({

@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useGetUserProfileQuery } from "@/lib/redux/api";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
@@ -8,9 +9,9 @@ import StarRating from "@/components/shared/StarRating";
 import { ProfileSkeleton } from "@/components/shared/Skeletons";
 import type { User } from "@amaken/shared";
 
-export default function ProfileDetailPage() {
-  const params = useParams();
-  const id = Number(params.id);
+function ProfileDetailContent() {
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
 
   const { data, isLoading } = useGetUserProfileQuery(id, { skip: !id });
 
@@ -94,5 +95,18 @@ export default function ProfileDetailPage() {
         </div>
       </section>
     </>
+  );
+}
+
+export default function ProfileDetailPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <div className="h-64 animate-pulse bg-gray-200" />
+        <div className="container-custom py-12"><ProfileSkeleton /></div>
+      </>
+    }>
+      <ProfileDetailContent />
+    </Suspense>
   );
 }

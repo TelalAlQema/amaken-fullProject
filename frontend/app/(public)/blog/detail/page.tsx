@@ -1,3 +1,7 @@
+"use client";
+
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import BreadcrumbBanner from "@/components/shared/BreadcrumbBanner";
@@ -95,19 +99,10 @@ const BLOG_DATA: Record<string, {
   },
 };
 
-type PageParams = { slug: string };
-
-export async function generateMetadata({ params }: { params: PageParams }) {
-  const post = BLOG_DATA[params.slug];
-  if (!post) return { title: "Blog Post Not Found" };
-  return {
-    title: post.title,
-    description: post.content.substring(0, 160).replace(/<[^>]+>/g, ""),
-  };
-}
-
-export default async function BlogDetailPage({ params }: { params: PageParams }) {
-  const post = BLOG_DATA[params.slug];
+function BlogDetailContent() {
+  const searchParams = useSearchParams();
+  const slug = searchParams.get("slug") || "";
+  const post = BLOG_DATA[slug];
 
   if (!post) {
     return (
@@ -183,5 +178,20 @@ export default async function BlogDetailPage({ params }: { params: PageParams })
         </div>
       </section>
     </>
+  );
+}
+
+export default function BlogDetailPage() {
+  return (
+    <Suspense fallback={
+      <>
+        <div className="h-64 animate-pulse bg-gray-200" />
+        <div className="container-custom py-12">
+          <div className="h-80 animate-pulse rounded-xl bg-gray-200" />
+        </div>
+      </>
+    }>
+      <BlogDetailContent />
+    </Suspense>
   );
 }
