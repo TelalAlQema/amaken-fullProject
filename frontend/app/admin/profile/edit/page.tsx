@@ -115,29 +115,29 @@ export default function AdminEditProfilePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">First Name</label>
-            <input type="text" required maxLength={50} value={formData.aname} onChange={(e) => update("aname", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" required maxLength={50} value={formData.aname} onChange={(e) => update("aname", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
-            <input type="text" required maxLength={50} value={formData.alname} onChange={(e) => update("alname", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" required maxLength={50} value={formData.alname} onChange={(e) => update("alname", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-            <input type="text" maxLength={20} value={formData.aphone} onChange={(e) => update("aphone", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" maxLength={20} value={formData.aphone} onChange={(e) => update("aphone", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">WhatsApp</label>
-            <input type="text" maxLength={20} value={formData.awphone} onChange={(e) => update("awphone", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" maxLength={20} value={formData.awphone} onChange={(e) => update("awphone", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Gender</label>
-            <select value={formData.agender} onChange={(e) => update("agender", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors">
+            <select value={formData.agender} onChange={(e) => update("agender", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors">
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
@@ -145,75 +145,75 @@ export default function AdminEditProfilePage() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Date of Birth</label>
-            <input type="date" value={formData.adateofbirth} onChange={(e) => update("adateofbirth", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="date" value={formData.adateofbirth} onChange={(e) => update("adateofbirth", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
-          <input type="text" maxLength={100} value={formData.aAddress} onChange={(e) => update("aAddress", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+          <input type="text" maxLength={100} value={formData.aAddress} onChange={(e) => update("aAddress", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Agency</label>
-            <input type="text" value={formData.agency} onChange={(e) => update("agency", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" value={formData.agency} onChange={(e) => update("agency", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Website</label>
-            <input type="url" value={formData.website} onChange={(e) => update("website", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.website} onChange={(e) => update("website", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">City</label>
-            <input type="text" value={formData.acity} onChange={(e) => update("acity", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" value={formData.acity} onChange={(e) => update("acity", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">State</label>
-            <input type="text" value={formData.astate} onChange={(e) => update("astate", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
+            <input type="text" value={formData.astate} onChange={(e) => update("astate", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Facebook</label>
-            <input type="url" value={formData.afb} onChange={(e) => update("afb", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.afb} onChange={(e) => update("afb", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Instagram</label>
-            <input type="url" value={formData.ainstagram} onChange={(e) => update("ainstagram", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.ainstagram} onChange={(e) => update("ainstagram", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Twitter</label>
-            <input type="url" value={formData.atwitter} onChange={(e) => update("atwitter", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.atwitter} onChange={(e) => update("atwitter", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">LinkedIn</label>
-            <input type="url" value={formData.alinkedin} onChange={(e) => update("alinkedin", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.alinkedin} onChange={(e) => update("alinkedin", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">TikTok</label>
-            <input type="url" value={formData.atiktok} onChange={(e) => update("atiktok", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-navy outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
+            <input type="url" value={formData.atiktok} onChange={(e) => update("atiktok", e.target.value)} className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-base text-navy outline-none sm:text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="https://" />
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:items-center">
           <button
             type="submit"
             disabled={mutationState.isLoading}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 sm:w-auto sm:justify-start disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {mutationState.isLoading ? "Saving..." : "Save Changes"}
           </button>
           <Link
             href="/admin/profile"
-            className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-navy hover:bg-gray-50 transition-colors"
+            className="w-full rounded-lg border border-gray-200 px-6 py-2.5 text-center text-sm font-medium text-navy transition-colors hover:bg-gray-50 sm:w-auto"
           >
             Cancel
           </Link>

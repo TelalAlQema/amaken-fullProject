@@ -67,7 +67,7 @@ export default function AdminProfilePage() {
               alt={`${data.aname} ${data.alname}`}
               className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-md"
             />
-            <div className="flex-1 text-center sm:text-left pb-2">
+            <div className="min-w-0 flex-1 pb-2 text-center sm:text-left">
               <h1 className="font-heading text-2xl font-bold text-navy">
                 {data.aname} {data.alname}
               </h1>

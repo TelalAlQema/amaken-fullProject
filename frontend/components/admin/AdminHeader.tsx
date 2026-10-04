@@ -55,16 +55,18 @@ export default function AdminHeader({ onToggleSidebar }: AdminHeaderProps) {
   const title = getPageTitle(pathname);
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 shadow-sm">
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6">
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
         <button
           onClick={onToggleSidebar}
-          className="rounded-lg p-2 text-amaken-gray hover:bg-gray-100 lg:hidden"
+          className="shrink-0 rounded-lg p-2 text-amaken-gray transition-colors hover:bg-gray-100 lg:hidden"
           aria-label="Toggle sidebar"
         >
           <Menu className="h-5 w-5" />
         </button>
-        <h1 className="text-lg font-semibold text-navy">{title}</h1>
+        <h1 className="truncate text-base font-semibold text-navy sm:text-lg">
+          {title}
+        </h1>
       </div>
 
       <div className="flex items-center gap-4">

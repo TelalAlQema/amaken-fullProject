@@ -123,7 +123,7 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold text-[#0d1432]">
@@ -178,9 +178,9 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <Filter size={16} className="shrink-0 text-gray-400" />
             <span className="text-sm text-gray-600">Date range:</span>
           </div>
           <input
@@ -190,9 +190,9 @@ export default function LeadsPage() {
               setFrom(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#17c788]/30 focus:border-[#17c788]"
+            className="w-full min-w-0 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-[#17c788] focus:outline-none focus:ring-2 focus:ring-[#17c788]/30 sm:w-auto"
           />
-          <span className="text-gray-400 self-center">to</span>
+          <span className="shrink-0 self-center text-gray-400">to</span>
           <input
             type="date"
             value={to}
@@ -200,7 +200,7 @@ export default function LeadsPage() {
               setTo(e.target.value);
               setPage(1);
             }}
-            className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#17c788]/30 focus:border-[#17c788]"
+            className="w-full min-w-0 rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-[#17c788] focus:outline-none focus:ring-2 focus:ring-[#17c788]/30 sm:w-auto"
           />
         </div>
 
@@ -276,8 +276,8 @@ export default function LeadsPage() {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <p className="text-sm text-gray-500">
+              <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="shrink-0 text-sm text-gray-500">
                   Page {pagination.page} of {pagination.totalPages}
                 </p>
                 <div className="flex gap-2">

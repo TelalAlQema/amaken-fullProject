@@ -119,10 +119,10 @@ export default function AdminChangeLogoPage() {
           alt="Company Logo"
           className="h-40 w-40 rounded-lg border-2 border-primary object-contain shadow-md"
         />
-        <div className="flex gap-3">
+        <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 sm:w-auto sm:justify-start"
           >
             <Upload className="h-4 w-4" />
             Upload New Logo
@@ -166,7 +166,7 @@ export default function AdminChangeLogoPage() {
                 <img src={preview} alt="Preview" className="mx-auto h-32 w-32 rounded-lg border-2 border-primary object-contain" />
               </div>
             )}
-            <div className="flex gap-3">
+            <div className="flex w-full max-w-sm flex-col gap-3 sm:flex-row">
               <button onClick={() => { setShowModal(false); setPreview(null); setSelectedFile(null); }} className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-navy hover:bg-gray-50 transition-colors">
                 Cancel
               </button>

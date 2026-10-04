@@ -72,9 +72,9 @@ export default function DataTable<T extends Record<string, unknown>>({
   pagination,
 }: DataTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-lg bg-white shadow">
+    <div className="rounded-lg bg-white shadow ring-1 ring-gray-100">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-full text-sm">
           <thead>
             <tr className="bg-gray-50">
               {columns.map((col) => (
@@ -139,11 +139,12 @@ export default function DataTable<T extends Record<string, unknown>>({
             {Math.min(pagination.page * 20, pagination.total)} of{" "}
             {pagination.total}
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-wrap items-center justify-center gap-1">
             <button
               onClick={() => pagination.onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
               className="rounded p-1.5 text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Previous page"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -152,7 +153,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                 p === "..." ? (
                   <span
                     key={`ellipsis-${i}`}
-                    className="px-2 text-sm text-gray-400"
+                    className="px-1 text-sm text-gray-400"
                   >
                     ...
                   </span>
@@ -160,6 +161,9 @@ export default function DataTable<T extends Record<string, unknown>>({
                   <button
                     key={p}
                     onClick={() => pagination.onPageChange(p)}
+                    aria-current={
+                      pagination.page === p ? "page" : undefined
+                    }
                     className={`min-w-[32px] rounded px-2 py-1 text-sm ${
                       pagination.page === p
                         ? "bg-primary text-white"
@@ -174,6 +178,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               onClick={() => pagination.onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
               className="rounded p-1.5 text-gray-500 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-label="Next page"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

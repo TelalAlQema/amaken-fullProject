@@ -23,15 +23,15 @@ const SOCIAL_LINKS = [
 export default function Footer() {
   return (
     <footer className="bg-navy text-gray-400">
-      <div className="container-custom py-12">
+      <div className="container-custom py-10 sm:py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* About */}
           <div>
-            <img src="/images/logo/amaken-footer.png" alt={SITE.NAME} className="mb-4 h-auto w-40 " />
+            <img src="/images/logo/amaken-footer.png" alt={SITE.NAME} className="mb-4 h-10 w-auto max-w-[160px] object-contain sm:h-12" />
             <p className="mb-4 text-sm leading-relaxed">
               {SITE.TAGLINE}. Your trusted partner in finding the perfect property in Dubai and the UAE.
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               {SOCIAL_LINKS.map((social) => (
                 <a
                   key={social.label}
@@ -88,8 +88,8 @@ export default function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-semibold text-white">Business Hours</h3>
             <ul className="space-y-2 text-sm">
-              <li className="flex justify-between"><span>Mon - Sat</span><span>9:00 AM - 9:00 PM</span></li>
-              <li className="flex justify-between"><span>Sunday</span><span>Closed</span></li>
+              <li className="flex justify-between gap-3"><span className="shrink-0">Mon - Sat</span><span className="text-right">9:00 AM - 9:00 PM</span></li>
+              <li className="flex justify-between gap-3"><span className="shrink-0">Sunday</span><span className="text-right">Closed</span></li>
             </ul>
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="border-t border-white/10">
-        <div className="container-custom flex flex-col items-center justify-between gap-2 py-4 sm:flex-row">
+        <div className="container-custom flex flex-col items-center justify-between gap-2 py-4 pb-24 sm:flex-row sm:pb-4">
           <p className="text-xs text-gray-500">
             &copy; {new Date().getFullYear()} {SITE.NAME}. All rights reserved.
           </p>

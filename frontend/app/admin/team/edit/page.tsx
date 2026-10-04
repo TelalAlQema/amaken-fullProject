@@ -103,7 +103,7 @@ function EditTeamMemberContent() {
 
   if (fetching) {
     return (
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
           <div className="space-y-4">
             <div className="h-5 w-48 animate-pulse rounded bg-gray-200" />
@@ -118,7 +118,7 @@ function EditTeamMemberContent() {
 
   if (!member) {
     return (
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-12 text-center">
           <p className="text-sm text-gray-500">Team member not found.</p>
           <Link
@@ -134,7 +134,7 @@ function EditTeamMemberContent() {
   }
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="mb-6">
         <Link
           href="/admin/team"
@@ -326,7 +326,7 @@ function EditTeamMemberContent() {
           </div>
 
           {/* Submit */}
-          <div className="flex items-center gap-3 border-t border-gray-100 pt-6">
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-6 sm:flex-row sm:items-center">
             <button
               onClick={handleSubmit}
               disabled={
@@ -336,14 +336,14 @@ function EditTeamMemberContent() {
                 !form.position ||
                 mutationState.isLoading
               }
-              className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#17c788] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50 sm:w-auto sm:justify-start"
             >
               <Upload className="h-4 w-4" />
               {mutationState.isLoading ? "Saving..." : "Save Changes"}
             </button>
             <Link
               href="/admin/team"
-              className="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="w-full rounded-lg border border-gray-200 px-5 py-2.5 text-center text-sm font-medium text-gray-700 hover:bg-gray-50 sm:w-auto"
             >
               Cancel
             </Link>
@@ -363,7 +363,7 @@ function EditTeamMemberContent() {
 export default function EditTeamMemberPage() {
   return (
     <Suspense fallback={
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
           <div className="space-y-4">
             <div className="h-5 w-48 animate-pulse rounded bg-gray-200" />

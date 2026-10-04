@@ -316,7 +316,7 @@ export default function AdminDashboardPage() {
               <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Property Overview
               </h2>
-              <div className="h-72">
+              <div className="h-60 sm:h-72">
                 {doughnutData && (
                   <Doughnut data={doughnutData} options={doughnutOptions} />
                 )}
@@ -326,7 +326,7 @@ export default function AdminDashboardPage() {
               <h2 className="mb-4 text-lg font-semibold text-gray-900">
                 Properties by Status &amp; Type
               </h2>
-              <div className="h-72">
+              <div className="h-60 sm:h-72">
                 {barData && <Bar data={barData} options={barOptions} />}
               </div>
             </div>

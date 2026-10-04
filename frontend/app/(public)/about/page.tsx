@@ -260,12 +260,13 @@ export default function AboutPage() {
                 journey simpler, clearer and more informed.
               </p>
             </div>
-            <div className="relative h-80 overflow-hidden rounded-xl">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl sm:aspect-[16/10] lg:aspect-auto lg:h-80">
               <Image
                 src="/images/about.png"
                 alt="Amaken Real Estate team in Dubai, UAE"
                 fill
                 className="object-cover"
+                sizes="(max-width: 1023px) 100vw, 50vw"
               />
             </div>
           </div>
@@ -326,7 +327,7 @@ export default function AboutPage() {
 
           {/* Mission & Vision */}
           <div className="mb-16 grid gap-8 sm:grid-cols-2">
-            <div className="card p-8">
+            <div className="card p-5 sm:p-8">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
                 🎯
               </div>
@@ -336,7 +337,7 @@ export default function AboutPage() {
                 informed property decisions in Dubai and the UAE.
               </p>
             </div>
-            <div className="card p-8">
+            <div className="card p-5 sm:p-8">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl">
                 👁️
               </div>

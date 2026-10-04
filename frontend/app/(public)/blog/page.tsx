@@ -103,9 +103,13 @@ export default function BlogPage() {
               <div className="card p-6">
                 <h3 className="mb-3 text-lg font-bold text-navy">Newsletter</h3>
                 <p className="mb-3 text-sm text-amaken-gray">Get the latest updates delivered to your inbox.</p>
-                <div className="flex gap-2">
-                  <input type="email" placeholder="Your email" className="input-field flex-1" />
-                  <button className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    className="input-field min-w-0 flex-1"
+                  />
+                  <button className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 sm:self-start">
                     Subscribe
                   </button>
                 </div>

@@ -33,7 +33,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-[80vh] bg-gray-50 py-8">
+    <div className="min-h-[80vh] bg-gray-50 py-6 sm:py-8">
       <div className="container-custom">
         <div className="mb-6">
           <nav className="text-sm text-amaken-gray">
@@ -44,7 +44,7 @@ export default function DashboardLayout({
         </div>
         <div className="flex flex-col gap-6 lg:flex-row">
           <ProfileSidebar />
-          <div className="flex-1">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
         </div>
       </div>
     </div>

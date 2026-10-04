@@ -118,7 +118,7 @@ function EditPropertyContent() {
           <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
           <textarea value={formData.pcontent} onChange={(e) => update("pcontent", e.target.value)} className="input-field" rows={4} />
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">Type</label>
             <select value={formData.type} onChange={(e) => update("type", e.target.value)} className="select-field">
@@ -138,7 +138,7 @@ function EditPropertyContent() {
             </select>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {[
             { l: "Bedroom", f: "bedroom" }, { l: "Bathroom", f: "bathroom" },
             { l: "Balcony", f: "balcony" }, { l: "Kitchen", f: "kitchen" }, { l: "Hall", f: "hall" },

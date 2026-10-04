@@ -64,7 +64,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       />
       <AdminHeader onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       <main className="pt-16 lg:pl-64">
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6">{children}</div>
       </main>
     </div>
   );

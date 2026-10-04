@@ -50,7 +50,7 @@ export default function ContactsPage() {
   };
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-[#0d1432]">
@@ -110,8 +110,8 @@ export default function ContactsPage() {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6">
-                <p className="text-sm text-gray-500">
+              <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="shrink-0 text-sm text-gray-500">
                   Page {pagination.page} of {pagination.totalPages}
                 </p>
                 <div className="flex gap-2">

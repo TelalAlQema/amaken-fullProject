@@ -32,7 +32,7 @@ const POPULAR_PLACES = [
   { name: "Dubai", slug: "Dubai", color: "from-primary to-primary-600" },
   { name: "Abu Dhabi", slug: "Abu Dhabi", color: "from-navy to-navy-light" },
   { name: "Sharjah", slug: "Sharjah", color: "from-primary-700 to-primary-800" },
-  { name: "Ajman", slug: "Ajman", color: "from-navy-dark to-navy" },
+  { name: "Ajman", slug: "Ajman", color: "from-navy-900 to-navy" },
 ];
 
 const jsonLd = {
@@ -83,39 +83,41 @@ export default function HomePage() {
       />
 
       {/* Hero Section */}
-      <section className="h-[60vh] bg-cover bg-center" style={{ backgroundImage: "url('/images/banner/main.png')" }}>
-        <div className="absolute inset-0" />
-        <div className="container-custom relative z-10 py-16 md:py-20">
-          <div className="grid items-start gap-8 lg:grid-cols-2">
-            <div className="max-w-2xl">
-              <h1 className="mb-4 text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
-                <span className="text-secondary">Let us Help You Find</span> Your Dream Home
+      <section
+        className="relative flex min-h-[540px] items-center bg-cover bg-center md:h-[70vh] md:min-h-[600px]"
+        style={{ backgroundImage: "url('/images/banner/main.png')" }}
+      >
+        {/* Left-side content overlay */}
+        <div className="absolute left-0 top-1/2 w-[38vw] -translate-y-1/2 bg-navy/60 rounded-tr-[200px] rounded-br-[200px]">
+          <div className="px-6 py-10 sm:px-8 sm:py-12 md:px-12 md:py-14">
+            <div className="max-w-3xl">
+              <h1 className="mb-4 text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
+                <span className="text-secondary pr-4">
+                  Let us Help You Find
+                </span>
+                Your Dream Home
               </h1>
-              <p className="mb-6 text-lg text-gray-200">
-                Your trusted partner in finding the perfect property in Dubai and the UAE. We offer the best deals on villas, apartments, and commercial properties.
-              </p>
-              {/* <div className="flex flex-wrap gap-3">
-                <Link href="/properties" className="rounded-lg bg-secondary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-600">
-                  Browse Properties
-                </Link>
-                <Link href="/submit-property" className="rounded-lg border-2 border-white px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-navy">
-                  Submit Property
-                </Link>
-              </div> */}
-            </div>
 
+              <p className="mb-8 text-lg text-gray-200">
+                Your trusted partner in finding the perfect property in Dubai and
+                the UAE. We offer the best deals on villas, apartments, and
+                commercial properties.
+              </p>
+
+            
+            </div>
           </div>
         </div>
       </section>
-      <section className="bg-gray-50 py-6">
+      <section className="bg-primary py-4 sm:py-6">
         <div className="container-custom">
           <HeroSearch />
         </div>
       </section>
       {/* Off Plan Section */}
-      <section className="py-16">
+      <section className="py-12 sm:py-16">
         <div className="container-custom">
-          <div className="mb-8 flex items-end justify-between">
+          <div className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-navy md:text-3xl">Off Plan Properties</h2>
               <p className="mt-1 text-amaken-gray">Explore exclusive off-plan investment opportunities</p>
@@ -140,9 +142,9 @@ export default function HomePage() {
 
       {/* Special Offers */}
       {offerProperties.length > 0 && (
-        <section className="bg-gray-50 py-16">
+        <section className="bg-gray-50 py-12 sm:py-16">
           <div className="container-custom">
-            <div className="mb-8 flex items-end justify-between">
+            <div className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-navy md:text-3xl">Special Offers</h2>
                 <p className="mt-1 text-amaken-gray">Don't miss these exclusive deals</p>
@@ -160,7 +162,7 @@ export default function HomePage() {
 
       {/* What We Do */}
       <section
-        className="relative overflow-hidden bg-cover bg-center py-16 min-h-[70vh]"
+        className="relative min-h-[70vh] overflow-hidden bg-cover bg-center py-12 sm:py-16"
         style={{ backgroundImage: "url('/images/what.png')" }}
       >
         {/* Overlay */}
@@ -208,9 +210,9 @@ export default function HomePage() {
       </section>
 
       {/* Recent Properties */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-gray-50 py-12 sm:py-16">
         <div className="container-custom">
-          <div className="mb-8 flex items-end justify-between">
+          <div className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold text-navy md:text-3xl">Recent Properties</h2>
               <p className="mt-1 text-amaken-gray">Latest listings added to our portfolio</p>
@@ -234,53 +236,53 @@ export default function HomePage() {
       </section>
 
       {/* Why Choose Us */}
-    <section
-  className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-cover bg-center py-16"
-  style={{ backgroundImage: "url('/images/1.png')" }}
->
-  {/* Overlay */}
-  <div className="absolute inset-0 bg-primary/10" />
+      <section
+        className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-cover bg-center py-12 sm:py-16"
+        style={{ backgroundImage: "url('/images/1.png')" }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-primary/10" />
 
-  {/* Centered Content */}
-  <div className="container-custom relative z-10 w-full">
-    <div className="text-center">
+        {/* Centered Content */}
+        <div className="container-custom relative z-10 w-full">
+          <div className="text-center">
 
-      {/* Heading */}
-      <h2 className="section-heading mb-10 text-secondary">
-        Why Choose Us
-      </h2>
+            {/* Heading */}
+            <h2 className="section-heading mb-10 text-secondary">
+              Why Choose Us
+            </h2>
 
-      {/* Cards */}
-      <div className="grid gap-8 sm:grid-cols-3">
-        {WHY_CHOOSE_US.map((item, i) => (
-          <div
-            key={i}
-            className="card bg-navy/60 p-8 text-center backdrop-blur-xs"
-          >
-            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-3xl text-secondary">
-              <span
-                className={`flaticon ${item.icon}`}
-                aria-hidden="true"
-              />
+            {/* Cards */}
+            <div className="grid gap-8 sm:grid-cols-3">
+              {WHY_CHOOSE_US.map((item, i) => (
+                <div
+                  key={i}
+                  className="card bg-navy/60 p-8 text-center backdrop-blur-xs"
+                >
+                  <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-3xl text-secondary">
+                    <span
+                      className={`flaticon ${item.icon}`}
+                      aria-hidden="true"
+                    />
+                  </div>
+
+                  <h3 className="mb-2 text-lg font-semibold text-secondary">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-sm text-gray-200">
+                    {item.desc}
+                  </p>
+                </div>
+              ))}
             </div>
 
-            <h3 className="mb-2 text-lg font-semibold text-secondary">
-              {item.title}
-            </h3>
-
-            <p className="text-sm text-gray-200">
-              {item.desc}
-            </p>
           </div>
-        ))}
-      </div>
-
-    </div>
-  </div>
-</section>
+        </div>
+      </section>
 
       {/* How It Works */}
-      <section className="py-16">
+      <section className="py-12 sm:py-16">
         <div className="container-custom">
           <h2 className="section-heading">How It Works</h2>
           <p className="section-subheading">Simple steps to find your perfect property</p>
@@ -301,7 +303,7 @@ export default function HomePage() {
       {/* Achievement Counters */}
       <section className="bg-primary py-12">
         <div className="container-custom">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-8">
             {[
               { label: "Property Available", value: "500+" },
               { label: "Sale Properties", value: "300+" },
@@ -309,7 +311,7 @@ export default function HomePage() {
               { label: "Registered Users", value: "1000+" },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-3xl font-bold text-white md:text-4xl">{stat.value}</div>
+                <div className="text-2xl font-bold text-white sm:text-3xl md:text-4xl">{stat.value}</div>
                 <div className="mt-1 text-sm text-white/80">{stat.label}</div>
               </div>
             ))}
@@ -318,7 +320,7 @@ export default function HomePage() {
       </section>
 
       {/* Popular Places */}
-      <section className="py-16">
+      <section className="py-12 sm:py-16">
         <div className="container-custom">
           <h2 className="section-heading">Popular Places</h2>
           <p className="section-subheading">Explore properties in the most sought-after locations</p>
@@ -341,7 +343,7 @@ export default function HomePage() {
 
       {/* About Preview */}
       {aboutContent.length > 0 && (
-        <section className="bg-gray-50 py-16">
+        <section className="bg-gray-50 py-12 sm:py-16">
           <div className="container-custom">
             <div className="grid items-center gap-12 md:grid-cols-2">
               <div>
@@ -358,8 +360,14 @@ export default function HomePage() {
                   Learn More
                 </Link>
               </div>
-              <div className="relative h-80 overflow-hidden rounded-xl">
-                <Image src="/images/about.png" alt="About Amaken" fill className="object-cover" />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl sm:aspect-[16/10] lg:aspect-auto lg:h-80">
+                <Image
+                  src="/images/about.png"
+                  alt="About Amaken"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1023px) 100vw, 50vw"
+                />
               </div>
             </div>
           </div>
@@ -367,7 +375,7 @@ export default function HomePage() {
       )}
 
       {/* CTA */}
-      <section className="bg-navy py-16">
+      <section className="bg-navy py-12 sm:py-16">
         <div className="container-custom text-center">
           <h2 className="mb-4 text-3xl font-bold text-white">Ready to Find Your Dream Property?</h2>
           <p className="mb-8 text-gray-300">Contact us today and let our expert agents help you find the perfect home.</p>

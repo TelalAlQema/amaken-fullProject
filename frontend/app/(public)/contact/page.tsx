@@ -63,7 +63,7 @@ export default function ContactPage() {
 
             {/* Contact Form */}
             <div className="lg:col-span-2">
-              <div className="card p-8">
+              <div className="card p-5 sm:p-8">
                 <h3 className="mb-6 text-xl font-bold text-navy">Send us a Message</h3>
 
                 {success ? (

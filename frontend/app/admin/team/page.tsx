@@ -71,7 +71,7 @@ export default function AdminTeamPage() {
   const items: TeamMember[] = response?.data ?? [];
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <ConfirmDialog
         open={deleteId !== null}
         title="Delete Team Member"

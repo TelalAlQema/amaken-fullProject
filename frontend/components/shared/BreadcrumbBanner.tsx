@@ -12,7 +12,7 @@ export default function BreadcrumbBanner({ title, subtitle, bgImage = "/images/b
   const Heading = as;
   return (
     <section
-      className="relative flex min-h-[260px] items-center bg-cover bg-center py-16 md:min-h-[320px]"
+      className="relative flex min-h-[260px] items-center bg-cover bg-center py-10 sm:py-16 md:min-h-[320px]"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className="absolute inset-0 bg-navy/80" />

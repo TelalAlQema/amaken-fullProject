@@ -138,7 +138,7 @@ export default function ProfilePicturePage() {
                 <img src={preview} alt="Preview" className="mx-auto h-32 w-32 rounded-full border-2 border-primary object-cover" />
               </div>
             )}
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <button onClick={() => { setShowModal(false); setPreview(null); setSelectedFile(null); }} className="btn-outline flex-1">
                 Cancel
               </button>

@@ -173,7 +173,7 @@ export default function ProfilePage() {
 
       <div className="rounded-lg bg-white p-6 shadow-md">
         <h3 className="mb-4 font-heading text-lg font-bold text-navy">Social Links</h3>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {user.website && (
             <a href={user.website} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-gray-100 px-4 py-2 text-sm text-amaken-gray hover:bg-gray-200">
               Website

@@ -42,7 +42,7 @@ export default function MyFeedbackPage() {
   };
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
         <h1 className="text-2xl font-bold text-[#0d1432] mb-6">My Feedback</h1>
 

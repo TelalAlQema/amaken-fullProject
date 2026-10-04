@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   User,
@@ -221,6 +221,17 @@ function SidebarContent({ counts, onClose }: { counts: Record<string, number>; o
 }
 
 export default function AdminSidebar({ counts, isOpen, onClose }: AdminSidebarProps) {
+  // Lock background scroll while the drawer is open, otherwise the page
+  // scrolls behind the overlay on touch devices.
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Desktop sidebar */}
@@ -228,14 +239,19 @@ export default function AdminSidebar({ counts, isOpen, onClose }: AdminSidebarPr
         <SidebarContent counts={counts} onClose={onClose} />
       </aside>
 
-      {/* Mobile overlay */}
+      {/* Mobile / tablet overlay drawer */}
       {isOpen && (
         <>
           <div
             className="fixed inset-0 z-40 bg-black/50 lg:hidden"
             onClick={onClose}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-full lg:hidden">
+          <aside
+            className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Admin navigation"
+          >
             <SidebarContent counts={counts} onClose={onClose} />
           </aside>
         </>

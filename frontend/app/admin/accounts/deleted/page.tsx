@@ -81,7 +81,7 @@ export default function DeletedAccountsPage() {
   });
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <ConfirmDialog
         open={deleteId !== null}
         title="Delete Record"
@@ -208,28 +208,28 @@ export default function DeletedAccountsPage() {
                     key={account.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-900">
                       {account.id}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-600">
                       {account.email}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td className="px-4 py-3 sm:whitespace-nowrap">
                       <span className="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">
                         {account.type}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td className="px-4 py-3 sm:whitespace-nowrap">
                       <span className="inline-flex rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-700">
                         {account.utype}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-600">
                       {account.date
                         ? new Date(account.date).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-right">
                       <button
                         onClick={() => setDeleteId(account.id)}
                         className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
@@ -246,15 +246,15 @@ export default function DeletedAccountsPage() {
         </div>
 
         {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
-            <p className="text-sm text-gray-500">
+          <div className="flex flex-col items-start gap-3 border-t border-gray-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="shrink-0 text-sm text-gray-500">
               Page {pagination.page} of {pagination.totalPages} ({total} results)
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex w-full items-center gap-2 sm:w-auto">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 sm:flex-none hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -264,7 +264,7 @@ export default function DeletedAccountsPage() {
                   setPage((p) => Math.min(pagination.totalPages, p + 1))
                 }
                 disabled={page >= pagination.totalPages}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 sm:flex-none hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Next
                 <ChevronRight className="h-4 w-4" />

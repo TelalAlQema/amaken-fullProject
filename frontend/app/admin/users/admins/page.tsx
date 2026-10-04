@@ -35,7 +35,7 @@ export default function AdminAdminsPage() {
   });
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -154,7 +154,7 @@ export default function AdminAdminsPage() {
                     key={admin.aid}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-900">
                       {admin.aid}
                     </td>
                     <td className="px-4 py-3">
@@ -172,21 +172,21 @@ export default function AdminAdminsPage() {
                         )}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm font-medium text-gray-900">
                       {admin.aname} {admin.alname}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-600">
                       {admin.aemail}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-600">
                       {admin.aphone || "—"}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3">
+                    <td className="px-4 py-3 sm:whitespace-nowrap">
                       <span className="inline-flex rounded-full bg-[#0d1432]/10 px-2.5 py-0.5 text-xs font-medium text-[#0d1432]">
                         {admin.atype || "Admin"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-600">
                       {admin.joinadate
                         ? new Date(admin.joinadate).toLocaleDateString()
                         : "—"}

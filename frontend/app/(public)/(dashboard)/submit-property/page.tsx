@@ -127,7 +127,7 @@ export default function SubmitPropertyPage() {
               <label className="mb-1 block text-sm font-medium text-gray-700">Description</label>
               <textarea value={formData.pcontent} onChange={(e) => update("pcontent", e.target.value)} className="input-field" rows={4} placeholder="Describe the property..." />
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">Property Type *</label>
                 <select value={formData.type} onChange={(e) => update("type", e.target.value)} className="select-field">

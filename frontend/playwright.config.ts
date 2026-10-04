@@ -24,7 +24,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "cd ../backend && npx tsx src/index.ts",
+      command: "cd ../backend && node src/index.js",
       url: `${API_URL}/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,

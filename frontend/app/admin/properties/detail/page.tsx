@@ -53,7 +53,7 @@ function PropertyDetailContent() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="space-y-4">
           <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
           <div className="h-64 animate-pulse rounded-xl bg-gray-200" />
@@ -64,7 +64,7 @@ function PropertyDetailContent() {
 
   if (!property) {
     return (
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <p className="text-gray-500">Property not found.</p>
       </div>
     );
@@ -98,7 +98,7 @@ function PropertyDetailContent() {
   );
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       {lightbox && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -112,27 +112,27 @@ function PropertyDetailContent() {
         </div>
       )}
 
-      <div className="mb-6 flex items-center justify-between">
-        <div>
+      <div className="mb-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 flex-1">
           <Link
             href="/admin/properties"
             className="mb-2 flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Properties
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">{property.title}</h1>
+          <h1 className="break-words text-xl font-bold text-gray-900 sm:text-2xl">{property.title}</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <Link
             href={`/admin/properties/edit?id=${id}`}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 sm:flex-none"
           >
             <Pencil className="h-4 w-4" /> Edit
           </Link>
           <button
             onClick={handleDelete}
             disabled={deleteState.isLoading}
-            className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 sm:flex-none"
           >
             <Trash2 className="h-4 w-4" /> Delete
           </button>
@@ -225,7 +225,7 @@ function PropertyDetailContent() {
             <p className="mb-1 text-2xl font-bold text-[#0d1432]">
               {property.curr} {Number(property.price).toLocaleString()}
             </p>
-            <p className="mb-4 flex items-center gap-1 text-sm text-gray-500">
+            <p className="mb-4 flex items-start gap-1 text-sm text-gray-500">
               <MapPin className="h-4 w-4" /> {property.location}, {property.city}, {property.state}
             </p>
 
@@ -238,7 +238,7 @@ function PropertyDetailContent() {
                 ["Selling Type", property.stype],
                 ["Status", property.status],
               ].map(([label, val]) => (
-                <div key={label} className="flex justify-between text-sm">
+                <div key={label} className="flex justify-between gap-3 text-sm">
                   <span className="text-gray-500">{label}</span>
                   <span className="font-medium text-gray-900">{val}</span>
                 </div>
@@ -249,7 +249,7 @@ function PropertyDetailContent() {
           {/* Rooms */}
           <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Rooms & Size</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {(
                 [
                   ["Bedroom", property.bedroom],
@@ -261,7 +261,7 @@ function PropertyDetailContent() {
                   ["Size", `${property.size} sqft`],
                 ] as [string, string][]
               ).map(([label, val]) => (
-                <div key={label} className="flex items-center gap-2 rounded-lg bg-gray-50 p-3">
+                <div key={label} className="flex min-w-0 items-center gap-2 rounded-lg bg-gray-50 p-3">
                   <div>
                     <p className="text-xs text-gray-500">{label}</p>
                     <p className="text-sm font-medium text-gray-900">{val || "-"}</p>
@@ -275,7 +275,7 @@ function PropertyDetailContent() {
           <div className="rounded-xl bg-white shadow-sm border border-gray-100 p-6">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Actions</h2>
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {actionBtn("Approve", () => approveMut(id).unwrap(), "bg-green-600 hover:bg-green-700", <CheckCircle className="h-4 w-4" />, approveState.isLoading)}
                 {actionBtn("Disapprove", () => disapproveMut(id).unwrap(), "bg-red-600 hover:bg-red-700", <XCircle className="h-4 w-4" />, disapproveState.isLoading)}
                 {actionBtn("Hide", () => hideMut(id).unwrap(), "bg-yellow-500 hover:bg-yellow-600", <EyeOff className="h-4 w-4" />, hideState.isLoading)}
@@ -294,7 +294,7 @@ function PropertyDetailContent() {
 export default function PropertyDetailPage() {
   return (
     <Suspense fallback={
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="space-y-4">
           <div className="h-8 w-48 animate-pulse rounded bg-gray-200" />
           <div className="h-64 animate-pulse rounded-xl bg-gray-200" />

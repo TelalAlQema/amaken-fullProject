@@ -174,7 +174,7 @@ export default function AdminPropertiesPage() {
   ];
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Properties</h1>
         <p className="text-sm text-gray-500">Manage all property listings</p>

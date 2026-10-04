@@ -128,7 +128,7 @@ export default function ApprovalPage() {
   ];
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Under Approval</h1>
         <p className="text-sm text-gray-500">Properties waiting for admin approval</p>

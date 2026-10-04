@@ -144,7 +144,9 @@ export default function PropertyCard({ property, variant = "grid" }: PropertyCar
           <span className="rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{property.type}</span>
           <span className="rounded bg-navy/10 px-2 py-0.5 text-xs font-medium text-navy capitalize">{property.stype}</span>
         </div>
-        <h3 className="mb-1 line-clamp-1 text-base font-semibold text-navy">{property.title}</h3>
+        <h3 className="mb-1 line-clamp-2 text-base font-semibold text-navy sm:line-clamp-1">
+          {property.title}
+        </h3>
         <p className="mb-2 text-xs text-amaken-gray">
           {property.location}{property.city ? `, ${property.city}` : ""}
         </p>

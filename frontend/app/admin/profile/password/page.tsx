@@ -129,18 +129,18 @@ export default function AdminChangePasswordPage() {
           )}
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:items-center">
           <button
             type="submit"
             disabled={mutationState.isLoading || !allChecks || !passwordsMatch}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-600 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-600 sm:w-auto sm:justify-start disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {mutationState.isLoading ? "Changing..." : "Change Password"}
           </button>
           <Link
             href="/admin/profile"
-            className="rounded-lg border border-gray-200 px-6 py-2.5 text-sm font-medium text-navy hover:bg-gray-50 transition-colors"
+            className="w-full rounded-lg border border-gray-200 px-6 py-2.5 text-center text-sm font-medium text-navy transition-colors hover:bg-gray-50 sm:w-auto"
           >
             Cancel
           </Link>

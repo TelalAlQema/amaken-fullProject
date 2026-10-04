@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CONTACT, SITE } from "@amaken/shared";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { getAssetUrl } from "@/lib/utils";
@@ -20,6 +20,60 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
+  const mobileNavRef = useRef<HTMLDivElement>(null);
+
+  // The panel's distance from the top of the viewport is not a constant: it
+  // depends on the top bar, the header's height, and the current scroll
+  // position. Measuring beats hardcoding a max-height, which silently overflows
+  // on short landscape viewports.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const el = mobileNavRef.current;
+    if (!el) return;
+
+    const fit = () => {
+      const top = el.getBoundingClientRect().top;
+      const available = window.innerHeight - top - 8;
+      el.style.maxHeight = available > 0 ? `${available}px` : "";
+    };
+
+    fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+    };
+  }, [mobileOpen]);
+
+  // The open panel is taller than a landscape-phone viewport, so it scrolls
+  // internally. Locking the page behind it stops the rubber-band scroll that
+  // would otherwise reveal the page underneath.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    // Growing past `lg` reveals the desktop nav, so the drawer is redundant.
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const onBreakpoint = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) setMobileOpen(false);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    desktop.addEventListener("change", onBreakpoint);
+    if (desktop.matches) setMobileOpen(false);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+      desktop.removeEventListener("change", onBreakpoint);
+    };
+  }, [mobileOpen]);
 
   return (
     <>
@@ -143,10 +197,10 @@ export default function Header() {
       </div>
 
       {/* Main Nav */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 shadow-sm" style={{ backgroundColor: "#D7BC3B" }}>
+      <header className="sticky top-0 z-50 border-b border-gray-100 shadow-sm" style={{ backgroundColor: "#FFFFFF" }}>
         <div className="container-custom flex items-center justify-between py-3">
           <Link href="/" className="flex items-center">
-            <img src="/images/logo/amaken.png" alt={SITE.NAME} className="h-auto w-20" />
+            <img src="/images/logo/title.png" alt={SITE.NAME} className="h-auto w-20" />
           </Link>
 
           <nav className="hidden items-center gap-6 lg:flex">
@@ -154,7 +208,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-navy transition-colors hover:text-primary-dark"
+                className="text-sm font-medium text-navy transition-colors hover:text-primary-800"
               >
                 {link.label}
               </Link>
@@ -164,17 +218,19 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <Link
               href="/submit-property"
-              className="hidden rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-navy-dark sm:inline-flex"
+              className="hidden rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-secondary-800 sm:inline-flex"
             >
               Submit Property
             </Link>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="rounded-lg p-2 text-navy hover:bg-white/20 lg:hidden"
+              className="-mr-1 rounded-lg p-2.5 text-navy transition-colors hover:bg-gray-100 active:bg-gray-200 lg:hidden"
               aria-label="Toggle menu"
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
             >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -186,38 +242,43 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="border-t border-white/20 px-4 pb-4 lg:hidden" style={{ backgroundColor: "#D7BC3B" }}>
+          <div
+            id="mobile-nav"
+            ref={mobileNavRef}
+            className="max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain border-t border-white/20 px-4 pb-4 lg:hidden"
+            style={{ backgroundColor: "#D7BC3B" }}
+          >
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block py-2.5 text-sm font-medium text-navy transition-colors hover:text-primary-dark"
+                className="flex min-h-[44px] items-center text-sm font-medium text-navy transition-colors hover:text-primary-800"
               >
                 {link.label}
               </Link>
             ))}
             {isAuthenticated ? (
               <>
-                <Link href="/profile" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-navy hover:text-primary-dark">
+                <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center text-sm font-medium text-navy hover:text-primary-800">
                   My Profile
                 </Link>
-                <Link href="/my-properties" onClick={() => setMobileOpen(false)} className="block py-2.5 text-sm font-medium text-navy hover:text-primary-dark">
+                <Link href="/my-properties" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center text-sm font-medium text-navy hover:text-primary-800">
                   My Properties
                 </Link>
                 <button
                   onClick={() => { setMobileOpen(false); logout(); }}
-                  className="mt-2 block w-full rounded-lg bg-red-500 px-4 py-2.5 text-center text-sm font-semibold text-white"
+                  className="mt-2 flex min-h-[44px] w-full items-center justify-center rounded-lg bg-red-500 px-4 text-sm font-semibold text-white"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white">
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="mt-2 flex min-h-[44px] items-center justify-center rounded-lg bg-navy px-4 text-sm font-semibold text-white">
                   Login
                 </Link>
-                <Link href="/verify-email" onClick={() => setMobileOpen(false)} className="mt-2 block rounded-lg border-2 border-navy px-4 py-2.5 text-center text-sm font-semibold text-navy">
+                <Link href="/verify-email" onClick={() => setMobileOpen(false)} className="mt-2 flex min-h-[44px] items-center justify-center rounded-lg border-2 border-navy px-4 text-sm font-semibold text-navy">
                   Register
                 </Link>
               </>
@@ -225,7 +286,7 @@ export default function Header() {
             <Link
               href="/submit-property"
               onClick={() => setMobileOpen(false)}
-              className="mt-2 block rounded-lg bg-navy px-4 py-2.5 text-center text-sm font-semibold text-white"
+              className="mt-2 flex min-h-[44px] items-center justify-center rounded-lg bg-navy px-4 text-sm font-semibold text-white"
             >
               Submit Property
             </Link>

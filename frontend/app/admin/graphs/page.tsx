@@ -135,13 +135,23 @@ export default function GraphsPage() {
     plugins: { legend: { display: false } },
     scales: {
       y: { beginAtZero: true, grid: { color: "#f3f4f6" } },
-      x: { grid: { display: false } },
+      // Six categories collide below ~500px without an explicit tick budget.
+      x: {
+        grid: { display: false },
+        ticks: {
+          maxRotation: 45,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 6,
+          font: { size: 10 },
+        },
+      },
     },
   };
 
   if (loading) {
     return (
-      <div className="bg-gray-50 p-6 min-h-screen">
+      <div className="bg-gray-50 min-h-screen">
         <div className="flex justify-center py-24">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#17c788] border-t-transparent" />
         </div>
@@ -150,34 +160,34 @@ export default function GraphsPage() {
   }
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold text-[#0d1432] mb-6">Analytics &amp; Graphs</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className={cardClass}>
           <h2 className="text-lg font-semibold text-[#0d1432] mb-4">Property Status Distribution</h2>
-          <div className="h-[300px] flex items-center justify-center">
+          <div className="flex h-[240px] items-center justify-center sm:h-[300px]">
             <Doughnut data={statusDistribution} options={doughnutOptions} />
           </div>
         </div>
 
         <div className={cardClass}>
           <h2 className="text-lg font-semibold text-[#0d1432] mb-4">Properties by Type</h2>
-          <div className="h-[300px]">
+          <div className="h-[240px] sm:h-[300px]">
             <Bar data={typeDistribution} options={barOptions} />
           </div>
         </div>
 
         <div className={cardClass}>
           <h2 className="text-lg font-semibold text-[#0d1432] mb-4">User Distribution</h2>
-          <div className="h-[300px] flex items-center justify-center">
+          <div className="flex h-[240px] items-center justify-center sm:h-[300px]">
             <Doughnut data={userDistribution} options={doughnutOptions} />
           </div>
         </div>
 
         <div className={cardClass}>
           <h2 className="text-lg font-semibold text-[#0d1432] mb-4">Property Overview</h2>
-          <div className="h-[300px]">
+          <div className="h-[240px] sm:h-[300px]">
             <Bar data={propertyOverview} options={barOptions} />
           </div>
         </div>

@@ -73,7 +73,7 @@ export default function AdminCitiesPage() {
   const [deleteMutation] = useAdminDeleteCityMutation();
 
   return (
-    <div className="bg-gray-50 p-6 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <ConfirmDialog
         open={deleteId !== null}
         title="Delete City"
@@ -94,7 +94,7 @@ export default function AdminCitiesPage() {
       </div>
 
       {/* Add New City */}
-      <div className="mb-6 rounded-xl bg-white shadow-sm border border-gray-100 p-6">
+      <div className="mb-6 rounded-xl bg-white shadow-sm border border-gray-100 p-4 sm:p-6">
         <h2 className="mb-3 text-sm font-medium text-gray-700">Add New City</h2>
         <div className="flex flex-col gap-3 sm:flex-row">
           <input
@@ -102,7 +102,7 @@ export default function AdminCitiesPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Enter city name"
-            className="flex-1 rounded-lg border border-gray-200 py-2.5 px-3 text-sm focus:border-[#17c788] focus:outline-none focus:ring-1 focus:ring-[#17c788]"
+            className="w-full min-w-0 flex-1 rounded-lg border border-gray-200 py-2.5 px-3 text-base focus:border-[#17c788] focus:outline-none focus:ring-1 focus:ring-[#17c788] sm:text-sm"
           />
           <select
             value={newSid}
@@ -127,7 +127,7 @@ export default function AdminCitiesPage() {
                   });
             }}
             disabled={!newName.trim() || !newSid || createState.isLoading}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#17c788] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#17c788] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#15b078] disabled:opacity-50 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {createState.isLoading ? "Adding..." : "Add"}
@@ -182,7 +182,7 @@ export default function AdminCitiesPage() {
                     key={city.cid}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-sm text-gray-900">
                       {city.cid}
                     </td>
                     <td className="px-4 py-3">
@@ -192,7 +192,7 @@ export default function AdminCitiesPage() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                           autoFocus
-                          className="w-full max-w-xs rounded-lg border border-[#17c788] py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#17c788]"
+                          className="w-full min-w-[8rem] max-w-[10rem] rounded-lg border border-[#17c788] py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#17c788] sm:max-w-xs"
                         />
                       ) : (
                         <span className="text-sm font-medium text-gray-900">
@@ -205,7 +205,7 @@ export default function AdminCitiesPage() {
                         <select
                           value={editSid}
                           onChange={(e) => setEditSid(Number(e.target.value))}
-                          className="w-full max-w-xs rounded-lg border border-[#17c788] py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#17c788]"
+                          className="w-full min-w-[8rem] max-w-[10rem] rounded-lg border border-[#17c788] py-1.5 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#17c788] sm:max-w-xs"
                         >
                           <option value={0}>Select State</option>
                           {states.map((s) => (
@@ -220,7 +220,7 @@ export default function AdminCitiesPage() {
                         </span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <td className="px-4 py-3 sm:whitespace-nowrap text-right">
                       {editId === city.cid ? (
                         <div className="flex items-center justify-end gap-1">
                           <button

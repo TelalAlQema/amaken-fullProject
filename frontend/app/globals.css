@@ -17,12 +17,17 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Safety net: clip stray horizontal overflow instead of letting the whole
+       document pan sideways on phones. `clip` (not `hidden`) keeps
+       `position: sticky` working. */
+    overflow-x: clip;
   }
 
   body {
     @apply font-body antialiased;
     color: var(--color-text);
     background-color: var(--color-bg);
+    overflow-x: clip;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -33,11 +38,16 @@
   img {
     @apply max-w-full;
   }
+
+  /* Long CMS/URL strings must not force the page wider than the viewport. */
+  p, li, td, th, h1, h2, h3, h4, h5, h6, a, span, div {
+    overflow-wrap: break-word;
+  }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold sm:px-6 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
     background-color: var(--color-secondary);
     color: var(--color-primary);
   }
@@ -49,7 +59,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold sm:px-6 text-white transition-all focus:outline-none focus:ring-2 focus:ring-offset-2;
     background-color: var(--color-primary);
   }
   .btn-secondary:hover {
@@ -57,7 +67,7 @@
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg border-2 px-6 py-3 text-sm font-semibold transition-all;
+    @apply inline-flex items-center justify-center rounded-lg border-2 px-4 py-3 text-sm font-semibold sm:px-6 transition-all;
     border-color: var(--color-secondary);
     color: var(--color-secondary);
   }
@@ -67,7 +77,7 @@
   }
 
   .input-field {
-    @apply w-full rounded-lg border px-4 py-3 text-sm focus:outline-none focus:ring-2;
+    @apply w-full rounded-lg border px-4 py-3 text-base focus:outline-none focus:ring-2 sm:text-sm;
     border-color: #d1d5db;
   }
   .input-field:focus {
@@ -76,7 +86,7 @@
   }
 
   .select-field {
-    @apply w-full rounded-lg border bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2;
+    @apply w-full rounded-lg border bg-white px-4 py-3 text-base focus:outline-none focus:ring-2 sm:text-sm;
     border-color: #d1d5db;
   }
   .select-field:focus {
@@ -94,12 +104,12 @@
   }
 
   .section-heading {
-    @apply mb-8 text-center text-3xl font-bold;
+    @apply mb-8 text-center text-2xl font-bold sm:text-3xl;
     color: var(--color-primary);
   }
 
   .section-subheading {
-    @apply mb-12 text-center;
+    @apply mb-8 text-center sm:mb-12;
     color: var(--color-text);
     opacity: 0.7;
   }
@@ -185,20 +195,35 @@
   font-display: swap;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Custom scrollbar.
+   The WebKit rules below shrink the scrollbar to 8px, which changes the layout
+   viewport width. Firefox ignores `::-webkit-scrollbar` entirely and would fall
+   back to a ~15px OS scrollbar, so the two engines would disagree by ~7px on
+   every `position: fixed; inset-0` overlay (header, drawers, modals).
+   `scrollbar-width: thin` gives Firefox a matching narrow gutter, and
+   `scrollbar-gutter` keeps the reserved space consistent when content
+   overflows vertically. Desktop-only: touch devices draw their own overlay
+   scrollbars and honouring these rules can introduce phantom gutters. */
+html {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-bg-alt);
-}
+@media (pointer: fine) {
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-primary-tint);
-  border-radius: 4px;
-}
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-alt);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-primary-tint);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+  }
 }
