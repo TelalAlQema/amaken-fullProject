@@ -20,7 +20,8 @@ const { getApp, closeDatabase } = require("../helpers/app");
 
 /** @type {[string, string][]} [method, path] */
 const EXPECTED_ROUTES = [
-["GET", "/api"],
+  ["GET", "/api"],
+  ["GET", "/api/docs"],
   ["GET", "/api/about"],
   ["POST", "/api/admin/about"],
   ["DELETE", "/api/admin/about/:id"],
@@ -31,6 +32,8 @@ const EXPECTED_ROUTES = [
   ["GET", "/api/admin/accounts/registered"],
   ["GET", "/api/admin/charts"],
   ["POST", "/api/admin/cities"],
+  ["GET", "/api/admin/feedback/agents"],
+  ["GET", "/api/admin/feedback/company"],
   ["DELETE", "/api/admin/cities/:id"],
   ["PUT", "/api/admin/cities/:id"],
   ["GET", "/api/admin/contacts"],
@@ -89,8 +92,6 @@ const EXPECTED_ROUTES = [
   ["GET", "/api/feedback/:id"],
   ["PUT", "/api/feedback/:id"],
   ["GET", "/api/feedback/about-me"],
-  ["GET", "/api/feedback/admin/agents"],
-  ["GET", "/api/feedback/admin/company"],
   ["GET", "/api/feedback/my"],
   ["GET", "/api/properties/"],
   ["POST", "/api/properties/"],

@@ -68,8 +68,8 @@ export default function RegisteredAccountsPage() {
 
   const [deleteMutation] = useDeleteAccountRecordMutation();
 
-  const items: RegisterEmail[] = response?.data ?? [];
-  const pagination = response?.pagination;
+  const items: RegisterEmail[] = response?.data?.items ?? [];
+  const pagination = response?.data?.pagination;
   const total = pagination?.total ?? items.length;
 
   const filtered = items.filter((a) => {

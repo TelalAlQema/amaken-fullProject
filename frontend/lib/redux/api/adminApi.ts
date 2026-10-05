@@ -15,6 +15,12 @@ import type {
   RegisterEmail,
 } from "@amaken/shared";
 
+type Paginated<T> = {
+  items: T[];
+  pagination: NonNullable<ApiResponse["pagination"]>;
+};
+type ApiFeedback = Omit<Feedback, "fid" | "fdescription"> & { id: number; description: string };
+
 export const adminApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     adminVerifyPin: builder.mutation<ApiResponse, { pin: string }>({
@@ -77,21 +83,21 @@ export const adminApi = baseApi.injectEndpoints({
       query: (body) => ({ url: "/admin/profile/password", method: "PUT", body }),
     }),
     listAdminUsers: builder.query<
-      ApiResponse<User[]>,
+      ApiResponse<Paginated<User>>,
       { type?: string; page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/users", params }),
       providesTags: ["AdminUser"],
     }),
     listAdminAgents: builder.query<
-      ApiResponse<User[]>,
+      ApiResponse<Paginated<User>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/users/agents", params }),
       providesTags: ["AdminUser"],
     }),
     listAdminBuilders: builder.query<
-      ApiResponse<User[]>,
+      ApiResponse<Paginated<User>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/users/builders", params }),
@@ -117,21 +123,21 @@ export const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["AdminUser"],
     }),
     listRegisteredAccounts: builder.query<
-      ApiResponse<RegisterEmail[]>,
+      ApiResponse<Paginated<RegisterEmail>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/accounts/registered", params }),
       providesTags: ["AdminAccount"],
     }),
     listDeletedAccounts: builder.query<
-      ApiResponse<DelAccount[]>,
+      ApiResponse<Paginated<DelAccount>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/accounts/deleted", params }),
       providesTags: ["AdminAccount"],
     }),
     listBlockedAccounts: builder.query<
-      ApiResponse<DelAccount[]>,
+      ApiResponse<Paginated<DelAccount>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/accounts/blocked", params }),
@@ -142,7 +148,7 @@ export const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["AdminAccount"],
     }),
     adminListProperties: builder.query<
-      ApiResponse<Property[]>,
+      ApiResponse<Paginated<Property>>,
       {
         page?: number;
         limit?: number;
@@ -156,7 +162,7 @@ export const adminApi = baseApi.injectEndpoints({
       providesTags: ["Property"],
     }),
     adminListPendingApproval: builder.query<
-      ApiResponse<Property[]>,
+      ApiResponse<Paginated<Property>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/properties/approval", params }),
@@ -194,7 +200,7 @@ export const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["Property"],
     }),
     adminListLeads: builder.query<
-      ApiResponse<PropertyLead[]>,
+      ApiResponse<Paginated<PropertyLead>>,
       { page?: number; limit?: number; from?: string; to?: string }
     >({
       query: (params) => ({ url: "/admin/leads", params }),
@@ -228,7 +234,7 @@ export const adminApi = baseApi.injectEndpoints({
       invalidatesTags: ["Lead"],
     }),
     adminListContacts: builder.query<
-      ApiResponse<Contact[]>,
+      ApiResponse<Paginated<Contact>>,
       { page?: number; limit?: number }
     >({
       query: (params) => ({ url: "/admin/contacts", params }),
@@ -238,11 +244,11 @@ export const adminApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/admin/contacts/${id}`, method: "DELETE" }),
       invalidatesTags: ["Contact"],
     }),
-    getCompanyFeedback: builder.query<ApiResponse<Feedback[]>, void>({
+    getCompanyFeedback: builder.query<ApiResponse<Paginated<ApiFeedback>>, void>({
       query: () => ({ url: "/admin/feedback/company" }),
       providesTags: ["Feedback"],
     }),
-    getAgentFeedback: builder.query<ApiResponse<Feedback[]>, void>({
+    getAgentFeedback: builder.query<ApiResponse<Paginated<ApiFeedback>>, void>({
       query: () => ({ url: "/admin/feedback/agents" }),
       providesTags: ["Feedback"],
     }),

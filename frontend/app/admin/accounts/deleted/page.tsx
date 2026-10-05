@@ -68,8 +68,8 @@ export default function DeletedAccountsPage() {
 
   const [deleteMutation] = useDeleteAccountRecordMutation();
 
-  const items: DelAccount[] = response?.data ?? [];
-  const pagination = response?.pagination;
+  const items: DelAccount[] = response?.data?.items ?? [];
+  const pagination = response?.data?.pagination;
   const total = pagination?.total ?? items.length;
 
   const filtered = items.filter((a) => {

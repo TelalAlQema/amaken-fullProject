@@ -32,13 +32,14 @@ const compression = require("compression");
 const defaultConfig = require("./config");
 const { errorHandler } = require("./middleware/errorHandler");
 const defaultRoutes = require("./routes");
-const { registerModules } = require("./bootstrap/registerModules");
+const { registerModules, MODULES } = require("./bootstrap/registerModules");
 const { createLogger, setLogger, httpLogger } = require("./core/logger");
 const { envelope, notFound } = require("./core/http");
 const { resolveCorsOrigin } = require("./core/http/cors");
 const { apiLimiter, authLimiter } = require("./core/http/rateLimit");
 const { createHealthRouter } = require("./core/health");
 const { observeRequest, routeLabel, getMetrics, metricsHandler } = require("./core/observability");
+const { createOpenApiDocument } = require("./core/http/openapi");
 
 /**
  * Terminal middleware: records duration and status for every completed request.
@@ -190,20 +191,20 @@ function createApp(deps = {}) {
     });
   });
 
-  // ── the API ───────────────────────────────────────────────────────────────
-  app.use("/api", routes);
+  const openApiDocument = createOpenApiDocument(MODULES);
+  app.get("/api/docs", (_req, res) => res.json(openApiDocument));
 
   // ── registered modules ─────────────────────────────────────────────────────
   // M03. Mounted on the app, not on `routes`: a module's `mounts[].path` is the
   // path as the client sees it (`/api/auth`, including the `/api` prefix), so a
   // module never learns which prefix the host chose for anything else.
   //
-  // After `routes` rather than before, and that is deliberate even though nothing
-  // currently collides: `routes` is the frozen, parity-tested table, and putting it
-  // first means no module can shadow an endpoint that baseline pins. When the last
-  // module has been migrated — M08 — both halves are declared in one place and the
-  // ordering stops being a question.
+  // Module manifests declare the entire API surface. The empty routes router stays
+  // mounted as the migration seam until the registry cleanup in M08.
   registerModules(app, modules);
+
+  // ── the API ───────────────────────────────────────────────────────────────
+  app.use("/api", routes);
 
   // ── terminal ──────────────────────────────────────────────────────────────
   app.use(notFound);

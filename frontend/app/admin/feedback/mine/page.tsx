@@ -12,7 +12,7 @@ interface Feedback {
   receive_email?: string;
   rating?: number;
   description?: string;
-  created_at?: string;
+  created_at?: Date | string;
 }
 
 function StarRating({ rating = 0 }: { rating: number }) {
@@ -34,7 +34,7 @@ export default function MyFeedbackPage() {
 
   const [deleteMutation, deleteState] = useDeleteFeedbackMutation();
 
-  const items: Feedback[] = (data?.data as unknown as Feedback[]) ?? [];
+  const items: Feedback[] = data?.data?.items ?? [];
 
   const handleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this feedback?")) return;

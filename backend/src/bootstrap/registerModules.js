@@ -19,20 +19,38 @@
  * in the M00 route parity baseline. It matters in one place today — `catch-all` and
  * `notFound` must come last — and it will matter for any module that mounts a
  * wildcard.
+ *
+ * `auth` is first because it has been since M03. Several modules share `/api/admin`
+ * but declare concrete routes without wildcards. Unmatched paths fall through to
+ * the remaining legacy routes. `accounts` publishes a capability and mounts nothing.
  */
 
 /**
  * The registry. One entry per module.
  *
- * M03 moves exactly one module here. The other twelve route files stay mounted by
- * `src/routes/index.js` until their own milestone: migrating them is not this
- * milestone's to do, and a half-migrated tree where some modules are registered and
- * some are hand-mounted is the state where nobody can answer "where is this
- * endpoint declared?".
+ * M03 added `auth`. M04 adds `admins`, `users` and `accounts`, which is why
+ * `src/routes/index.js` no longer mounts `user.routes` or `admin.routes`: a
+ * half-migrated tree where some modules are registered and some are hand-mounted is
+ * the state where nobody can answer "where is this endpoint declared?".
+ *
+ * M06 moves CMS, locations, feedback, contacts, and dashboard from routes/services
+ * into registered modules.
  *
  * @type {{ name: string, mounts: { path: string, router: import("express").Router, guards: import("express").RequestHandler[] }[] }[]}
  */
-const MODULES = [require("../modules/auth")];
+const MODULES = [
+  require("../modules/auth"),
+  require("../modules/admins"),
+  require("../modules/users"),
+  require("../modules/accounts"),
+  require("../modules/properties"),
+  require("../modules/leads"),
+  require("../modules/cms"),
+  require("../modules/locations"),
+  require("../modules/feedback"),
+  require("../modules/contacts"),
+  require("../modules/dashboard"),
+];
 
 /**
  * Mounts every module's routers onto `target`.

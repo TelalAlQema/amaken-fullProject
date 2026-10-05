@@ -67,13 +67,13 @@ changes nothing. Fix both together or neither.
 ```js
 res.ok(data);
 res.created(data);                                // 201, same body
-res.paginated({ items, pagination, legacyKey });  // legacyKey is ADR 0003's dual-emit
+res.paginated({ items, pagination });
 res.noContent();                                  // 204
 res.fail(status, message, code);                  // only the errorHandler should call this
 ```
 
-No route uses them yet — that conversion is M03-M06. They are pinned by
-`test/unit/kernel.test.js` in the meantime.
+Paginated list routes use `res.paginated()`; detail and mutation routes use `res.ok()` or
+`res.created()`. Contract tests pin the response shapes.
 
 ## Errors
 
@@ -115,23 +115,17 @@ The frontend reauth chain fires only on exactly `401` (`baseApi.ts:78`, `lib/api
 an expired token means the user is never refreshed and is hard-redirected to `/login` instead. Never
 return 403 for an authentication failure.
 
-## The current mess
+## Paginated lists
 
-The backend emits a different list key per service, and the frontend has three incompatible readers.
-Only the first combination works, which is why several admin pages render empty today.
+Every paginated response uses one shape:
 
-| Service | Emits | Frontend reads | Result |
-|---|---|---|---|
-| `property.service:226` | `{ properties, pagination }` | `data.properties` + `data.pagination` | ✅ works |
-| `admin.service:296` | `{ users, pagination }` | `data.items` | ❌ empty |
-| `admin.service:453` | `{ accounts, pagination }` | `data` as array + top-level `pagination` | ❌ empty |
-| `lead.service:49` | `{ leads, pagination }` | `data.items` or `data[]` | ❌ empty |
-| `feedback.service:79` | `{ feedbacks, pagination }` | `data` as array | ❌ empty |
-| `contact.service:32` | `{ contacts, pagination }` | `data.items` or `data[]` | ❌ empty |
+```json
+{ "success": true, "data": { "items": [], "pagination": { "page": 1, "limit": 20, "total": 0, "totalPages": 0 } } }
+```
 
-[M07](../milestones/M07-contract-consolidation.md) collapses these onto `items` in two steps: the
-backend dual-emits `items` + the legacy key, the frontend migrates, then the legacy branch is
-deleted.
+Backend routes use `res.paginated()` and services return `{ items, pagination }`. Frontend
+list pages read `data.items`. Property API adapters may flatten that envelope for their
+existing Redux consumers, while retaining the same `items` source contract.
 
 ## Pagination semantics
 

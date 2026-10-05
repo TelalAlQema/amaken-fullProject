@@ -13,7 +13,10 @@
  * client, one schema — and it is commented at each call site so a reviewer sees a
  * decision rather than an accident.
  */
-const { prisma, withTransaction } = require("../../platform/db/prisma");
+// `withTransaction` moved out with `createUserWithLedger`: the only transaction this
+// repository used was the one wrapping the ledger write, and that now lives in
+// `modules/accounts`.
+const { prisma } = require("../../platform/db/prisma");
 
 /**
  * @param {string} email already lower-cased and trimmed by the service
@@ -32,45 +35,21 @@ function findUserById(uid) {
 }
 
 /**
- * Cross-module read: `del_account` becomes `modules/accounts` in M04.
+ * M04 removed three functions from this file, and this is where they went:
  *
- * @param {string} email
- * @returns {Promise<object|null>}
+ *   - `findDeletedAccountByEmail` → `accounts.capabilities.findLedgerByEmail`
+ *   - `findRegisterEmailByEmail`  → `accounts.capabilities.findRegistrationByEmail`
+ *   - `createUserWithLedger`      → `accounts.capabilities.createUserWithRegistration`
+ *
+ * All three were marked in place as "becomes `modules/accounts` in M04", and all
+ * three now are. Each was an ADR 0002 cross-module read or write with a comment
+ * explaining why it was legal — legal, but a `user` repository reaching into the
+ * identity ledger, which is the coupling M04 exists to remove.
+ *
+ * `createUserWithRegistration` keeps the transaction that made it atomic in M03:
+ * a `register_email` failure must not leave a live account the admin "registered"
+ * list does not show.
  */
-function findDeletedAccountByEmail(email) {
-  return prisma.delAccount.findFirst({ where: { email } });
-}
-
-/**
- * Cross-module read: `register_email` becomes `modules/accounts` in M04.
- *
- * @param {string} email
- * @returns {Promise<object|null>}
- */
-function findRegisterEmailByEmail(email) {
-  return prisma.registerEmail.findFirst({ where: { email } });
-}
-
-/**
- * Creates the user and its ledger row together, or neither.
- *
- * **One transaction, new in M03.** These were two independent writes, so a ledger
- * failure left a live account that no `register_email` row mentioned — and the
- * admin "registered" list, which reads the ledger, would not show a user who
- * demonstrably exists and can log in.
- *
- * @param {object} userData a `user` create payload
- * @param {object} ledgerData a `registerEmail` create payload
- * @returns {Promise<object>} the created user
- */
-function createUserWithLedger(userData, ledgerData) {
-  return withTransaction(async (tx) => {
-    // Cross-module write: `register_email`. Explicit, because it is the accounts
-    // module's table, and this is the dependency M04 exists to remove.
-    await tx.registerEmail.create({ data: ledgerData });
-    return tx.user.create({ data: userData });
-  });
-}
 
 /**
  * @param {number} uid
@@ -123,9 +102,6 @@ function findAdminByEmail(email) {
 module.exports = {
   findUserByEmail,
   findUserById,
-  findDeletedAccountByEmail,
-  findRegisterEmailByEmail,
-  createUserWithLedger,
   markLogin,
   upgradePasswordHash,
   replacePassword,

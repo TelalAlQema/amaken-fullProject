@@ -216,10 +216,6 @@ const config = deepFreeze({
     mainPhone: env.ADMIN_MAIN_PHONE,
   },
 
-  envelope: {
-    legacyKey: env.ENVELOPE_LEGACY_KEY,
-  },
-
   test: {
     dbName: env.TEST_DB_NAME,
   },

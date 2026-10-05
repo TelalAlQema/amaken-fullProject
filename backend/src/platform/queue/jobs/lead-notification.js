@@ -9,9 +9,14 @@
  *
  * `lead.service.submitLead` commits the lead row **before** enqueueing, so a
  * worker that picks the job up immediately still sees the row.
+ *
+ * M04: the import moves from `services/email.service` to `platform/mail`, and the
+ * `if (!sent) throw` goes away with the boolean the old adapter returned. A
+ * delivery failure now arrives as a `MailDeliveryError` from the adapter, which is
+ * the same throw the queue retried before — the retry policy is unchanged.
  */
 const config = require("../../../config");
-const emailService = require("../../../services/email.service");
+const mail = require("../../mail");
 
 /**
  * @param {object} payload
@@ -25,6 +30,11 @@ async function processLeadNotification({ kind, leadId, email }) {
   // The admin mailbox is the SMTP account itself. There is no separate
   // "notification address" config key, and adding one here would mean a second
   // source of truth for a value that has never existed.
+  //
+  // Read from `config` rather than `mail.adminMailbox()`: this is a *check* on
+  // whether the deployment has an SMTP account at all, which is a configuration
+  // question, and the config key is the honest place to ask it. `adminMailbox()`
+  // exists for a caller that wants to display the address, not gate on it.
   const adminEmail = config.mail.user;
 
   if (!adminEmail) {
@@ -38,10 +48,7 @@ async function processLeadNotification({ kind, leadId, email }) {
     throw new Error(`lead-notification job for ${kind || "lead"} ${leadId} has no customer email`);
   }
 
-  const sent = await emailService.sendAdminNotificationEmail(adminEmail, email);
-  if (!sent) {
-    throw new Error(`SMTP rejected the ${kind} notification to ${adminEmail}`);
-  }
+  await mail.sendAdminNotification(adminEmail, email);
 
   return { to: adminEmail, kind: kind || "lead", subject: String(leadId) };
 }

@@ -204,8 +204,8 @@ test("GET /api/properties/my lists the caller's own properties", async () => {
 
   const res = await as(user).get("/api/properties/my").expect(200);
 
-  assert.ok(Array.isArray(res.body.data.properties));
-  assert.equal(res.body.data.properties.length, 1);
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items.length, 1);
 });
 
 test("GET /api/properties/my returns 403 for an admin token (requireRole user)", async () => {

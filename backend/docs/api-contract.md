@@ -1,12 +1,12 @@
 # API contract
 
-**Status: draft — to be frozen at the end of [M00.3](milestones/M00-safety-net.md).**
+**Status: active contract.** Paginated endpoints use `data.items` and `data.pagination`.
 
 After freezing, any change to this document is a breaking change and requires an ADR. This file is
 the specification that `test/` pins and that the contract tests assert against.
 
 Base path: `/api`. Static uploads: `/uploads` at the API host root. Health: `/health`. Metrics:
-`/metrics`. 98 routes, frozen by `test/contract/route-parity.test.js`.
+`/metrics`. 101 routes, pinned by `test/contract/route-parity.test.js`.
 
 > `getAssetUrl` builds asset URLs by stripping a trailing `/api` off `NEXT_PUBLIC_API_URL`
 > (`frontend/lib/utils.ts:8`). **Do not change the `/api` prefix or move `/uploads`.**
@@ -18,6 +18,7 @@ Base path: `/api`. Static uploads: `/uploads` at the API host root. Health: `/he
 | GET | `/health` | `{ status, timestamp }` | Checks nothing. Playwright waits on it (`playwright.config.ts:28`) |
 | GET | `/metrics` | Prometheus text | Added in [M01](milestones/M01-core-kernel.md). Unauthenticated. `amaken_api_up`, `…_http_request_duration_seconds`, `…_http_requests_total`, `…_http_errors_total`. Disabled with `METRICS_ENABLED=false` |
 | GET | `/api` | `{ message, version, docs }` | Service discovery. Not enveloped |
+| GET | `/api/docs` | OpenAPI 3.1 JSON | Generated from the registered route table and Zod schemas |
 
 ## Public
 
@@ -107,13 +108,13 @@ Pre-auth: `POST /api/admin/pin`, `POST /api/admin/login`. Everything below is be
 | DELETE | `/api/admin/leads/:id` | |
 | POST | `/api/admin/leads/bulk-delete` | |
 | POST | `/api/admin/leads/delete-all` | no body validation |
-| GET | `/api/admin/contacts` | **always 500** — broken dynamic import, see Known divergences |
-| DELETE | `/api/admin/contacts/:id` | **always 500** — same cause |
+| GET | `/api/admin/contacts` | paginated contact submissions |
+| DELETE | `/api/admin/contacts/:id` | |
 | GET | `/api/admin/stats` | flat counters, no pagination |
 | GET | `/api/admin/charts` | |
 | GET | `/api/admin/sidebar-counts` | |
-| GET | `/api/feedback/admin/company` | admin feedback — **not** under `/api/admin` |
-| GET | `/api/feedback/admin/agents` | admin feedback — **not** under `/api/admin` |
+| GET | `/api/admin/feedback/company` | mapped to `id` and `description` |
+| GET | `/api/admin/feedback/agents` | mapped to `id` and `description` |
 | POST/PUT/DELETE | `/api/admin/about[/:id]` | multipart |
 | POST/PUT/DELETE | `/api/admin/team[/:id]` | multipart |
 | POST/PUT/DELETE | `/api/admin/states[/:id]` | |
@@ -130,8 +131,6 @@ purpose; M00 flips it.
 
 | Endpoint | Symptom | Cause | Fix |
 |---|---|---|---|
-| `GET /api/admin/contacts` | always `500` | `await import("../services/contact.service")` — ESM `import()` does not do CJS extension resolution, so it throws `ERR_MODULE_NOT_FOUND` (`admin-property.routes.js:272`) | M00.5 |
-| `DELETE /api/admin/contacts/:id` | always `500` | same expression at `admin-property.routes.js:289` | M00.5 |
 | `GET /api/properties/:id` | leaks lead PII | `include: { leads: true }` with no auth guard (`property.service.js:255`) | M00.5 |
 | `GET /api/feedback/:id` | unauthenticated | route has no `authenticate` (`feedback.routes.js:71`) | M00.5 |
 | `POST /api/admin/login` | PIN gate is client-side only | `adminLogin` (`admin.service.js:39`) never checks that the PIN step happened, and nothing records that it did — a direct API call skips the PIN entirely | M00.6 |
@@ -142,12 +141,9 @@ purpose; M00 flips it.
 
 | Frontend calls | Backend actually serves | Source |
 |---|---|---|
-| `GET /api/admin/feedback/company` | `GET /api/feedback/admin/company` | `adminApi.ts:242` |
-| `GET /api/admin/feedback/agents` | `GET /api/feedback/admin/agents` | `adminApi.ts:246` |
 | `GET /api/admin/dashboard/stats` | `GET /api/admin/stats` | `adminApi.ts:250` |
 | `GET /api/admin/dashboard/charts` | `GET /api/admin/charts` | `adminApi.ts:254` |
 | `GET /api/admin/dashboard/sidebar-counts` | `GET /api/admin/sidebar-counts` | `adminApi.ts:257` |
-| `GET /api/docs` | — (nothing; `/api` advertises it) | `app.js:80` |
 
 All five `/api/admin/dashboard/*` requests 404, which is why every admin dashboard
 panel is blank. The comments at `dashboard.routes.js:12,25,46` assert the
@@ -156,24 +152,16 @@ the inner paths are `/stats`, `/charts`, `/sidebar-counts`. The comments are the
 stale artefact, not the mount — the frontend is the side to bring into line, via
 an alias so neither caller breaks. M00.10.
 
-The feedback split also trips token selection: `baseApi.ts:13` picks the admin
-token by `url.startsWith("/admin")`, so a frontend call to `/admin/feedback/company`
-would send a *user* token even once the path exists. M06.
+M06 moved admin feedback to the frontend's `/api/admin/feedback/*` path, so token
+selection now chooses the admin token as intended.
 
-### Shape mismatches
+### Canonical list envelope
 
-Six admin list pages read a shape the backend does not emit. See
-[envelope.md](architecture/envelope.md#the-current-mess) and
-[M07](milestones/M07-contract-consolidation.md).
+All paginated endpoints return `data.items` and `data.pagination`. The generated
+OpenAPI 3.1 document is served at `GET /api/docs`.
 
-Array key names are inconsistent and are pinned individually: `properties`,
-`leads`, `contacts`, and `users` are singular, but feedback returns
-**`feedbacks`** (plural, `feedback.service.js:53,78`). M00.10 normalises.
-
-### Advertsised but absent
-
-`GET /api` returns `docs: "/api/docs"`. No such route exists. Fixed in
-[M00.10](milestones/M00-safety-net.md).
+Feedback rows map database `fid`/`fdescription` to frontend `id`/`description` in
+`modules/feedback/feedback.mapper.js`.
 
 ## Invariants the frontend depends on
 

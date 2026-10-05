@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@amaken/shared": "workspace:*",
+    "@asteasolutions/zod-to-openapi": "^7.3.4",
     "@prisma/client": "^5.15.0",
     "@prometheus-io/client": "^0.16.1",
     "bcryptjs": "^2.4.3",

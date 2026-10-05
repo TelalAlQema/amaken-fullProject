@@ -268,8 +268,10 @@ const envSchema = z
 
     // ── admin ──────────────────────────────────────────────────────────────
     /**
-     * Must match `admin.main` for the super-admin row. `admin.service` compares
-     * the two and refuses to act on any other admin.
+     * Must match `admin.main` for the super-admin row.
+     * `modules/admins`' `adminLogin` compares the two and exempts a matching
+     * admin from the block check — which is the only way a blocked admin can sign
+     * in again, since there is no admin unfreeze endpoint.
      */
     ADMIN_MAIN_PHONE: optionalString,
 
@@ -277,10 +279,6 @@ const envSchema = z
     SHUTDOWN_TIMEOUT_MS: positiveInt(10_000),
 
     // ── response envelope ──────────────────────────────────────────────────
-    // ADR 0003. `true` dual-emits `items` alongside the legacy named key.
-    // M07 flips it to `false` and deletes the alias.
-    ENVELOPE_LEGACY_KEY: bool(true),
-
     // ── test harness ───────────────────────────────────────────────────────
     /**
      * Name the derived test database must have. `scripts/test-db.js` refuses

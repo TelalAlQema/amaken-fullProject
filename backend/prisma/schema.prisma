@@ -147,6 +147,10 @@ model Property {
   floor          String  @default("") @db.VarChar(100)
   size           String  @default("") @db.VarChar(100)
   price          String  @db.VarChar(100)
+  /// Numeric counterpart for filtering and ordering. The display string remains
+  /// authoritative for legacy presentation; null means the legacy value could
+  /// not be safely parsed during the M05 backfill.
+  priceValue     Decimal? @db.Decimal(14, 2)
   location       String  @db.VarChar(500)
   city           String  @db.VarChar(255)
   state          String  @db.VarChar(255)
@@ -187,8 +191,7 @@ model Property {
   @@index([state])
   @@index([type])
   @@index([stype])
-  @@index([price])
-  @@index([deactivate, adminapproval, blocked_user, adminblock])
+  @@index([deactivate, adminapproval, blocked_user, adminblock, priceValue], map: "Property_visibility_price_idx")
 }
 
 model Pin {
@@ -223,7 +226,28 @@ model DelAccount {
   utype String   @db.VarChar(100)
   date  DateTime @default(now())
 
-  @@index([email])
+  // M04. This was a plain `@@index([email])`, which is why the admin freeze and
+  // delete paths could not express "the ledger row for this address" as a single
+  // unique key — they read the id with `findFirst` and then wrote an upsert against
+  // `id: … ?? -1`. A read-then-upsert is not atomic: two concurrent freezes both read
+  // null and both try to create, and the `?? -1` branch attempts a primary key of
+  // `-1`, which only fails by luck.
+  //
+  // `@@unique([email])` makes `upsert({ where: { email } })` a real one-statement
+  // upsert, which is what `modules/accounts` does inside the transaction.
+  //
+  // REQUIRES A MIGRATION on any database that already has data. Duplicate emails
+  // are possible in an existing deployment — `adminUnfreezeUser` used `deleteMany`,
+  // so a delete then a block could have left two rows — so run the dedupe before
+  // applying:
+  //
+  //   DELETE d1 FROM del_account d1
+  //     JOIN del_account d2
+  //       ON d1.email = d2.email AND d1.id > d2.id;
+  //
+  // The test database is created with `prisma db push` (`scripts/test-db.js`), so it
+  // picks this up with no migration step.
+  @@unique([email])
   @@index([type])
 }
 

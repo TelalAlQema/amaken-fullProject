@@ -45,9 +45,14 @@ const path = require("node:path");
  * category — it is the directory the pre-M02 code wrote *every* non-property
  * image into: profile avatars, company logos, team photos and about images all
  * share `public/uploads/users/`, and the database rows holding those filenames
- * are addressed by callers that rebuild the path themselves
- * (`getUserUploadDir()` in `services/upload.service.js`, used from
- * `user.service.js` and `admin.service.js`).
+ * are addressed by callers that rebuild the path themselves.
+ *
+ * M04 is the milestone that stopped those callers from doing so: `modules/users` and
+ * `modules/admins` now call `saveImage(file, StorageDir.USERS, …)` and
+ * `deleteFile(StorageDir.USERS, filename)` on this port, so the path is rebuilt in
+ * one place. `services/upload.service.js` still exports `getUserUploadDir` and
+ * `getFilePath` for the not-yet-migrated property and CMS routes, and its comment
+ * says which they are.
  *
  * Renaming the directory to `avatars` — which reads better and is what the other
  * entries are named for — would write new files somewhere the read path does not

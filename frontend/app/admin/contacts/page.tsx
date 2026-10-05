@@ -32,17 +32,9 @@ export default function ContactsPage() {
 
   const [deleteMutation] = useDeleteContactMutation();
 
-  const responseData = data?.data as unknown as
-    | Contact[]
-    | { items?: Contact[]; pagination?: Pagination }
-    | undefined;
-  const resultData = Array.isArray(responseData) ? undefined : responseData;
-  const items: Contact[] =
-    (resultData?.items as Contact[]) ??
-    (responseData as unknown as Contact[]) ??
-    [];
-  const pagination: Pagination =
-    (resultData?.pagination as Pagination) ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
+  const resultData = data?.data;
+  const items: Contact[] = resultData?.items ?? [];
+  const pagination: Pagination = resultData?.pagination ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
 
   const handleDelete = (id: number) => {
     if (!confirm("Are you sure you want to delete this contact submission?")) return;

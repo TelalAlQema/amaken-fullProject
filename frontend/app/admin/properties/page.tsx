@@ -47,8 +47,8 @@ export default function AdminPropertiesPage() {
 
   const [deleteMutation, deleteState] = useAdminDeletePropertyMutation();
 
-  const properties = data?.data || [];
-  const pagination = data?.pagination;
+  const properties = data?.data?.items || [];
+  const pagination = data?.data?.pagination;
 
   const handleDelete = useCallback(
     (item: Property) => {

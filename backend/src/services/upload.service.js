@@ -109,8 +109,13 @@ const uploadTeamImage = multer({ storage: memory, fileFilter, limits: { fileSize
 function processAndSaveImage(file, targetDir, prefix, maxWidth = 800, maxHeight = 800) {
   // Maps the caller's absolute path back to a logical directory. The two that
   // exist are `properties/` and `users/` — pre-M02 wrote every avatar, logo, team
-  // and about image into `users/`, and the read path in `user.service.js` /
-  // `admin.service.js` still rebuilds that same directory to look the file up.
+  // and about image into `users/`.
+  //
+  // M04 removed the other half of this problem: `modules/users` and `modules/admins`
+  // no longer call `processAndSaveImage` at all. They pass `StorageDir.USERS` to the
+  // `platform/storage` port directly, so there is no absolute path to map back from
+  // on the read side either. What is left here is for the property, CMS and team
+  // routes, which have not been migrated yet.
   //
   // Anything else falls back to `USERS` rather than a category-specific directory,
   // because a file written to `avatars/` cannot be found by the code that reads it.

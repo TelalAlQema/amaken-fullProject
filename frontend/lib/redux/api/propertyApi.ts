@@ -4,7 +4,7 @@ import type { ApiResponse, Property } from "@amaken/shared";
 type ListResponse<T> = {
   success: boolean;
   data?: {
-    properties: T;
+    items: T;
     pagination?: ApiResponse["pagination"];
   };
   error?: ApiResponse["error"];
@@ -12,7 +12,7 @@ type ListResponse<T> = {
 
 const normalizeList = <T extends unknown[]>(response: ListResponse<T>): ApiResponse<T> => ({
   ...response,
-  data: response.data?.properties ?? ([] as unknown as T),
+  data: response.data?.items ?? ([] as unknown as T),
   pagination: response.data?.pagination,
 });
 

@@ -1,6 +1,6 @@
 # M05 — Property domain: properties, leads
 
-- **Status:** pending
+- **Status:** pending (code implemented; database-copy preflight and full verification outstanding)
 - **Depends on:** M04
 - **Blocks:** M07 (envelope consolidation touches every module)
 
@@ -44,6 +44,30 @@ Plan:
 This is the only step in the plan that needs a **forward-only, reversible migration**; run it on a
 database copy first and record the row counts in this file.
 
+The migration is `prisma/migrations/20261005000000_add_property_price_value/migration.sql`.
+It accepts plain decimal values with correctly grouped commas and optional AED/USD/EUR/GBP or
+common currency symbols. Other strings stay in `price` and get `priceValue = NULL`. To audit a
+database copy before applying the migration, run:
+
+```sql
+SELECT COUNT(*) AS total_rows,
+       SUM(TRIM(price) REGEXP '^(AED|USD|EUR|GBP|[$€£])?[[:space:]]*([0-9]{1,12}|[0-9]{1,3}(,[0-9]{3}){1,3})(\\.[0-9]{1,2})?[[:space:]]*(AED|USD|EUR|GBP|[$€£])?$') AS parseable_rows,
+       SUM(NOT (TRIM(price) REGEXP '^(AED|USD|EUR|GBP|[$€£])?[[:space:]]*([0-9]{1,12}|[0-9]{1,3}(,[0-9]{3}){1,3})(\\.[0-9]{1,2})?[[:space:]]*(AED|USD|EUR|GBP|[$€£])?$')) AS unparseable_rows,
+       SUM(TRIM(price) = '') AS blank_rows,
+       SUM(price LIKE '%,%') AS comma_rows,
+       SUM(price REGEXP '^(AED|USD|EUR|GBP|[$€£])') AS currency_prefix_rows,
+       SUM(price REGEXP '(AED|USD|EUR|GBP|[$€£])$') AS currency_suffix_rows
+FROM Property;
+```
+
+**Preflight record:** not run. The configured MySQL connection fails during authentication with
+`Unknown authentication plugin 'sha256_password'`, including when retried with elevated access.
+No database-copy connection was available; total, parseable, unparseable, blank, separator, and
+currency counts remain unrecorded, and the migration has not been applied.
+The migration leaves the legacy display string intact. The manual rollback is recorded in
+`prisma/migrations/20261005000000_add_property_price_value/rollback.sql`; it restores the old
+display-string index before dropping the derived numeric column.
+
 ### 3. Collapse duplicated state transitions
 `hideProperty` and `disapproveProperty` are byte-identical (`:394-412`), as are `displayProperty`
 and `approveProperty` (`:374-392`). Four routes (`admin-property.routes.js:66,80,94,108`) collapse
@@ -61,8 +85,7 @@ concurrent sharp decodes will spike memory.
   consumes it as a `Blob` (`lib/redux/api/adminApi.ts:210`). Do not wrap it. See
   [ADR 0003](../adr/0003-canonical-envelope.md).
 - `lead.routes.js:26-27` extracts ip/device in the route. Move into the service.
-- Fix: the frontend calls `/api/admin/leads/export`; the route exists. But `/api/admin/feedback/*`
-  does **not** exist on the backend (see [M06](M06-content-support-modules.md)).
+- The admin feedback paths are owned by M06 and now match `/api/admin/feedback/*`.
 
 ### 6. Move admin contacts out
 `admin-property.routes.js:267,285` host contact admin CRUD, dynamically importing `contact.service`
@@ -85,10 +108,10 @@ node --test test/                    # baseline green
 
 ## Definition of done
 
-- [ ] Every property read path goes through `VisibilityPolicy`
-- [ ] `priceValue` backfilled, verified against the string column, index created
-- [ ] Price sort and price range filter are **numeric** — tests assert `9000000 > 950000`
-- [ ] `hide ≡ disapprove` and `display ≡ approve` collapsed
-- [ ] 8-image upload no longer processes serially
-- [ ] Lead export is bounded or streamed
+- [x] Public listing, state, and detail reads use `VisibilityPolicy`; owner and admin moderation reads retain hidden records by design
+- [ ] `priceValue` backfilled, verified against the string column, index created (copy preflight pending)
+- [x] Price sort and range filter use `priceValue`; module test covers `9000000 > 950000`
+- [x] Approval and visibility transitions share state setter implementations
+- [x] 8-image upload processes with a concurrency limit of two
+- [x] Lead export is capped at 10,000 rows
 - [ ] M00 baseline green throughout

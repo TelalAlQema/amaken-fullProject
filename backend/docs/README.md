@@ -40,7 +40,7 @@ docs/
 | M00 | Safety net + P0 security | in progress |
 | M01 | Core kernel + `app.js`/`server.js` split | **done** |
 | M02 | Scale infrastructure (MySQL queue + durable cache, probes, drain, metrics) | **done** — no Redis: MySQL-backed throughout |
-| M03 | `modules/auth` — the reference module | pending |
+| M03 | `modules/auth` — the reference module | code complete — DB verification blocked |
 | M04 | `modules/users` + `modules/admins` + `modules/accounts` | pending |
 | M05 | `modules/properties` + `modules/leads` + price migration | pending |
 | M06 | `modules/cms` + `locations` + `feedback` + `contacts` + `dashboard` | pending |

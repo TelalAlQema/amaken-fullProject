@@ -19,19 +19,36 @@
 /** @typedef {{ success: true, data: unknown }} SuccessBody */
 /** @typedef {{ success: false, error: { message: string, code?: string, details?: unknown } }} ErrorBody */
 
-/** True when the client should keep the legacy named key alongside `items`. */
-function legacyKeyEnabled(flag) {
-  return flag !== false;
-}
-
 /**
- * 200 — `{ success: true, data }`.
+ * 200 — `{ success: true, data }`, plus an optional top-level `message`.
+ *
+ * ## Why `message` exists at all
+ *
+ * Six admin endpoints answered `{ success, data, message }` — the property approval
+ * transitions and the admin lists that say "Property approved" alongside the updated row.
+ * They were the only bodies in the process with three top-level keys, and they got there
+ * by writing `res.json({ success: true, data: result, message: "…" })` by hand.
+ *
+ * The alternative was to drop `message` and let those six responses lose a string the
+ * frontend reads. So it is a parameter here instead of a hand-written envelope in a route:
+ * one key, one implementation, and the shape is still `{ success, data, message }` on the
+ * wire so nothing downstream moves.
+ *
+ * It is **not** part of the canonical envelope ([ADR
+ * 0003](../../../docs/adr/0003-canonical-envelope.md)) and `envelope.md` notes it as a
+ * legacy top-level field. This stays separate from the canonical paginated envelope
+ * and is preserved for the existing approval screens.
  *
  * @param {import("express").Response} res
  * @param {unknown} [data]
+ * @param {string} [message]
  */
-function ok(res, data) {
-  res.status(200).json({ success: true, data: data === undefined ? null : data });
+function ok(res, data, message) {
+  res.status(200).json({
+    success: true,
+    data: data === undefined ? null : data,
+    ...(message !== undefined && { message }),
+  });
 }
 
 /**
@@ -61,17 +78,9 @@ function noContent(res) {
  * @param {object} params
  * @param {unknown[]} params.items
  * @param {{ page: number, limit: number, total: number, totalPages: number }} params.pagination
- * @param {string} [params.legacyKey] pre-M07 key, e.g. `"properties"`. Emitted
- *   only while the envelope flag is on, so the frontend can migrate before the
- *   alias is deleted.
- * @param {boolean} [params.legacyKeyEnabled] per-call override of the flag.
  */
-function paginated(res, { items = [], pagination, legacyKey, legacyKeyEnabled: flag = true } = {}) {
-  const data = { items, pagination };
-  if (legacyKey && legacyKeyEnabled(flag) && legacyKey !== "items") {
-    data[legacyKey] = items;
-  }
-  res.status(200).json({ success: true, data });
+function paginated(res, { items = [], pagination } = {}) {
+  res.status(200).json({ success: true, data: { items, pagination } });
 }
 
 /**

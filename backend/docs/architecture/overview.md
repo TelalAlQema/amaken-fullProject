@@ -17,7 +17,7 @@ src/
 ├── server.js         process lifecycle ONLY: dotenv → config → ping DB → createApp()
 │                      → listen → bounded drain → $disconnect → signals
 ├── app.js            createApp(deps): pure Express factory. No listen, no dotenv,
-│                      no process events. 98 routes, mounted from ./routes.
+│                      no process events. API routes mount from module manifests.
 │                      config/ logger/ envelope/ helmet cors rate-limit body static
 │                      /health /metrics /api → /api → 404 → errorHandler
 ├── config/           the ONLY place permitted to read process.env. 31 keys, zod,
@@ -30,12 +30,15 @@ src/
 ├── platform/
 │   └── db/prisma.js  the only code permitted to talk to MySQL. ping, disconnect,
 │                      withTransaction
-├── middleware/       auth.js, errorHandler.js, validate.js   (legacy, M03-M06)
-├── routes/           12 files, unchanged since M00.3
-└── services/         14 files, unchanged since M00.3
+├── middleware/       auth.js, errorHandler.js, validate.js   (legacy, M04-M06)
+├── routes/           empty migration seam; API routes are in module manifests
+└── services/         remaining infrastructure-era services; domain services live in modules
 ```
 
-`packages/shared/` remains dead code — nothing in `src/` imports it.
+`packages/shared/` is no longer dead code. As of M03, `modules/auth/auth.schema.js` imports
+`strongPasswordSchema`, `USER_TYPES` and `GENDERS` from it. The other shared schemas are
+still unused, and `auth.schema.js` documents field by field why — several of them disagree
+with the frozen HTTP contract, so they cannot be adopted as-is.
 
 ### Target (M06)
 
@@ -130,11 +133,11 @@ not import another module's code. That is the pragmatic line.
 | `accounts` | ledgers from `admin.service:445,461,476` | exists only as a dependency of admin user management |
 | `properties` | `property.service` | `VisibilityPolicy`; **price migration** |
 | `leads` | `lead.service` | unbounded TSV export → queue |
-| `feedback` | `feedback.service` | `/feedback/admin/*` → `/admin/feedback/*` |
-| `contacts` | `contact.service` | admin CRUD currently lives in `admin-property.routes:267,285` |
-| `cms` | `about.service`, `team.service` | two declared-but-unwired zod schemas |
-| `locations` | `location.service` | duplicate `idParam` zod object |
-| `dashboard` | `dashboard.service` | read-model, 35 count queries per load → batched + cached |
+| `feedback` | `feedback.service` | admin routes use `/api/admin/feedback/*`; mapper exposes frontend field names |
+| `contacts` | `contact.service` | public submissions and admin CRUD live in one module |
+| `cms` | `about.service`, `team.service` | create/update schemas validate request bodies |
+| `locations` | `location.service` | one shared id schema; admin guard is in the manifest |
+| `dashboard` | `dashboard.service` | one batched query per read model, cached for 30 seconds |
 
 ## Request lifecycle
 

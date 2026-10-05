@@ -60,13 +60,11 @@ module.exports = {
 ### Rules for paths
 
 1. **Every path is explicit and absolute.** No module composes its prefix from another module's
-   mount. `routes/index.js` currently mounts `leadRoutes` onto a *second* `/properties` prefix, so
-   `POST /properties/:id/lead` matches by mount order — a refactor hazard. Explicit paths remove it.
+   mount. `POST /api/properties/:id/lead` is declared by the leads module under its own manifest.
 2. **Every admin path lives under `/api/admin/`.** The frontend selects the admin token with a
    literal `url.startsWith("/admin")` test (`frontend/lib/redux/api/baseApi.ts:13`). An admin
-   endpoint outside that prefix silently receives the *user* token. Two endpoints already violate
-   this: `/feedback/admin/company` and `/feedback/admin/agents`. Fixed in
-   [M06](../milestones/M06-content-support-modules.md).
+   endpoint outside that prefix silently receives the *user* token. M06 places admin feedback at
+   `/api/admin/feedback/company` and `/api/admin/feedback/agents`.
 3. **Path stability is a promise.** Changing a mount path is a breaking API change. Additive routes
    are fine; renames need an ADR.
 

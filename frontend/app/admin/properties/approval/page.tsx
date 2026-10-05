@@ -20,8 +20,8 @@ export default function ApprovalPage() {
   const [approveMut, approveState] = useApprovePropertyMutation();
   const [disapproveMut, disapproveState] = useDisapprovePropertyMutation();
 
-  const properties = data?.data || [];
-  const pagination = data?.pagination;
+  const properties = data?.data?.items || [];
+  const pagination = data?.data?.pagination;
 
   const columns = [
     {

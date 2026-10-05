@@ -26,7 +26,7 @@ interface PropertyLead {
   email: string;
   phone: string;
   nationality?: string;
-  created_at?: string;
+  created_at?: Date | string;
 }
 
 interface Pagination {
@@ -54,17 +54,9 @@ export default function LeadsPage() {
   const [singleDeleteMutation] = useDeleteLeadMutation();
   const [bulkDeleteMutation] = useBulkDeleteLeadsMutation();
 
-  const rawData = response?.data as unknown as
-    | PropertyLead[]
-    | { items?: PropertyLead[]; pagination?: Pagination }
-    | undefined;
-  const resultData = Array.isArray(rawData) ? undefined : rawData;
-  const items: PropertyLead[] =
-    (resultData?.items as PropertyLead[]) ??
-    (rawData as unknown as PropertyLead[]) ??
-    [];
-  const pagination: Pagination =
-    (resultData?.pagination as Pagination) ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
+  const resultData = response?.data;
+  const items: PropertyLead[] = resultData?.items ?? [];
+  const pagination: Pagination = resultData?.pagination ?? { page: 1, limit: 15, total: 0, totalPages: 0 };
 
   const allSelected = items.length > 0 && items.every((l) => selectedIds.has(l.id));
 

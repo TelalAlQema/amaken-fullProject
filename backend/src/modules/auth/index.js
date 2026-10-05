@@ -13,10 +13,19 @@
  * wholesale, a consumer could reach `repository.markLogin` through a `require` of
  * the manifest — and there would be nothing in the import to stop it.
  *
- * `issueTokenPair` is here because `services/admin.service.js` mints an admin pair
- * in its login handler. It is a second entry point into the module and it is named
- * in the manifest on purpose: M04 moves the admin login into this module, and until
- * then the capability has to exist somewhere reachable.
+ * `issueTokenPair` is here because `modules/admins` mints an admin pair in its login
+ * handler. It is a second entry point into this module and it is named in the
+ * manifest on purpose: the alternative is `modules/admins` importing
+ * `token.service.js` directly, which would give the process two ways to mint a
+ * session and no single place to see who does.
+ *
+ * M04 note: the milestone's own wording was that it "moves the admin login into this
+ * module". It does not, and should not — the admin login is one of the twenty
+ * `/api/admin` endpoints that the frozen route table pins, so it belongs to
+ * `modules/admins`, and M04 moved it there rather than here. What moved is the
+ * dependency: the admin login used to mint its own tokens through this capability
+ * from a service in `src/services/`, and now it does from a module that declares it
+ * in its own manifest.
  *
  * `authenticate`, `requireRole` and `optionalAuth` are deliberately **not**
  * re-exported. They live in `src/middleware/`, one shared implementation for the

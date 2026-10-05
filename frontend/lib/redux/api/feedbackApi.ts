@@ -1,13 +1,18 @@
 import { baseApi } from "./baseApi";
 import type { ApiResponse, Feedback } from "@amaken/shared";
 
+type PaginatedFeedback = {
+  items: (Omit<Feedback, "fid" | "fdescription"> & { id: number; description: string })[];
+  pagination: NonNullable<ApiResponse["pagination"]>;
+};
+
 export const feedbackApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFeedback: builder.query<ApiResponse<Feedback>, number>({
       query: (id) => ({ url: `/feedback/${id}` }),
     }),
     getMyFeedback: builder.query<
-      ApiResponse<Feedback[]>,
+      ApiResponse<PaginatedFeedback>,
       Record<string, string | number> | void
     >({
       query: (params) =>
@@ -15,7 +20,7 @@ export const feedbackApi = baseApi.injectEndpoints({
       providesTags: ["Feedback"],
     }),
     getFeedbackAboutMe: builder.query<
-      ApiResponse<Feedback[]>,
+      ApiResponse<PaginatedFeedback>,
       Record<string, string | number> | void
     >({
       query: (params) =>

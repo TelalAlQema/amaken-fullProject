@@ -4,10 +4,11 @@
  * Pins the envelope shape of every unauthenticated endpoint. These pass on
  * unmodified src/.
  *
- * Three assertions here document KNOWN BUGS rather than correct behaviour. They
- * are written to assert the CURRENT, wrong behaviour so the suite is green at
- * baseline, and each carries a fix marker. When the fix lands the assertion
- * inverts and the test is renamed — see M00.5 and M05.
+ * Where an assertion documents a KNOWN BUG it says so and carries a fix marker, and
+ * it asserts the CURRENT, wrong behaviour so the suite stays green at baseline.
+ * `GET /api/users/:id` used to be one of those (FIXME(M00.5)); M04 resolved it and the
+ * assertion is now inverted. The remaining markers are M00.5's property-leads leak
+ * and M05's.
  */
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -25,6 +26,9 @@ const {
   createContact,
 } = require("../helpers/fixtures");
 
+const { authenticate } = require("../../src/middleware/auth");
+const userPolicy = require("../../src/modules/users/users.policy");
+
 test.beforeEach(resetDatabase);
 test.after(closeDatabase);
 
@@ -35,38 +39,39 @@ test("GET /api returns the discovery envelope (no success flag)", async () => {
 
   assert.equal(res.body.message, "Amaken Real Estate API");
   assert.equal(res.body.version, "0.1.0");
-  // FIXME(M00.10): advertises a docs route that does not exist.
   assert.equal(res.body.docs, "/api/docs");
 });
 
-test("GET /api/docs is advertised by /api but does not exist", async () => {
-  // FIXME(M00.10): the discovery envelope points at /api/docs, which 404s.
-  const res = await request(getApp()).get("/api/docs").expect(404);
-  assert.equal(res.body.error.message, "Route not found");
+test("GET /api/docs serves OpenAPI 3.1 for all mounted routes", async () => {
+  const res = await request(getApp()).get("/api/docs").expect(200);
+  assert.equal(res.body.openapi, "3.1.0");
+  assert.ok(res.body.paths["/api/properties"]);
+  assert.ok(res.body.paths["/api/admin/leads/export"]);
+  assert.ok(res.body.paths["/api/auth/refresh"]);
 });
 
 // ── GET /api/properties ─────────────────────────────────────────────────────
 
-test("GET /api/properties returns { properties, pagination }", async () => {
+test("GET /api/properties returns { items, pagination }", async () => {
   const user = await createUser();
   await createProperty({ uid: user.uid, title: "Visible Villa" });
 
   const res = await request(getApp()).get("/api/properties").expect(200);
 
   assert.equal(res.body.success, true);
-  // The one list contract the frontend actually matches.
-  assert.ok(Array.isArray(res.body.data.properties));
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.properties, undefined, "legacy list aliases are removed");
   assert.deepEqual(Object.keys(res.body.data.pagination).sort(), [
     "limit",
     "page",
     "total",
     "totalPages",
   ]);
-  assert.equal(res.body.data.properties.length, 1);
-  assert.equal(res.body.data.properties[0].title, "Visible Villa");
+  assert.equal(res.body.data.items.length, 1);
+  assert.equal(res.body.data.items[0].title, "Visible Villa");
   // The list carries the owner summary, not the full user row.
-  assert.ok(res.body.data.properties[0].user);
-  assert.ok("uimage" in res.body.data.properties[0].user);
+  assert.ok(res.body.data.items[0].user);
+  assert.ok("uimage" in res.body.data.items[0].user);
 });
 
 test("GET /api/properties paginates", async () => {
@@ -74,12 +79,12 @@ test("GET /api/properties paginates", async () => {
   for (let i = 0; i < 5; i++) await createProperty({ uid: user.uid, title: `P${i}` });
 
   const page1 = await request(getApp()).get("/api/properties?page=1&limit=2").expect(200);
-  assert.equal(page1.body.data.properties.length, 2);
+  assert.equal(page1.body.data.items.length, 2);
   assert.equal(page1.body.data.pagination.total, 5);
   assert.equal(page1.body.data.pagination.totalPages, 3);
 
   const page3 = await request(getApp()).get("/api/properties?page=3&limit=2").expect(200);
-  assert.equal(page3.body.data.properties.length, 1);
+  assert.equal(page3.body.data.items.length, 1);
 });
 
 test("GET /api/properties caps limit at 100", async () => {
@@ -93,8 +98,8 @@ test("GET /api/properties filters by city", async () => {
   await createProperty({ uid: user.uid, city: "Abu Dhabi", title: "Abu Dhabi Flat" });
 
   const res = await request(getApp()).get("/api/properties?city=Dubai").expect(200);
-  assert.equal(res.body.data.properties.length, 1);
-  assert.equal(res.body.data.properties[0].title, "Dubai Flat");
+  assert.equal(res.body.data.items.length, 1);
+  assert.equal(res.body.data.items[0].title, "Dubai Flat");
 });
 
 test("GET /api/properties hides unapproved properties from the public", async () => {
@@ -103,7 +108,7 @@ test("GET /api/properties hides unapproved properties from the public", async ()
   await createProperty({ uid: user.uid, title: "Pending", adminapproval: 0 });
 
   const res = await request(getApp()).get("/api/properties").expect(200);
-  const titles = res.body.data.properties.map((p) => p.title);
+  const titles = res.body.data.items.map((p) => p.title);
 
   assert.deepEqual(titles, ["Approved"]);
 });
@@ -114,8 +119,8 @@ test("GET /api/properties accepts a search term", async () => {
   await createProperty({ uid: user.uid, title: "Desert Warehouse" });
 
   const res = await request(getApp()).get("/api/properties?search=Marina").expect(200);
-  assert.equal(res.body.data.properties.length, 1);
-  assert.equal(res.body.data.properties[0].title, "Marina Penthouse");
+  assert.equal(res.body.data.items.length, 1);
+  assert.equal(res.body.data.items[0].title, "Marina Penthouse");
 });
 
 // ── GET /api/properties/:id ────────────────────────────────────────────────
@@ -198,27 +203,36 @@ test("POST /api/properties/:id/lead requires a valid body", async () => {
 
 // ── GET /api/properties/state/:slug ─────────────────────────────────────────
 
-test("GET /api/properties/state/:stateSlug returns the same { properties, pagination } shape", async () => {
+test("GET /api/properties/state/:stateSlug returns { items, pagination }", async () => {
   const user = await createUser();
   await createProperty({ uid: user.uid, state: "Dubai", title: "Dubai One" });
 
   const res = await request(getApp()).get("/api/properties/state/Dubai").expect(200);
 
-  assert.ok(Array.isArray(res.body.data.properties));
-  assert.equal(res.body.data.properties[0].title, "Dubai One");
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items[0].title, "Dubai One");
 });
 
 // ── GET /api/users/:id ──────────────────────────────────────────────────────
 
-test("GET /api/users/:id requires authentication (router-wide authenticate)", async () => {
-  // FIXME(M00.5): user.routes.js:12 applies `router.use(authenticate)`, so the
-  // intended-public profile route at :251 is unreachable without a token. The
-  // frontend calls it with no token, so it cannot work.
+test("GET /api/users/:id is reachable without a token", async () => {
+  // Resolves FIXME(M00.5). The pre-M04 router applied `router.use(authenticate)`
+  // to the whole file, which made this route unreachable without a token even
+  // though it is the one profile endpoint the frontend fetches anonymously.
+  //
+  // `modules/users` now opts out of the router-wide guard for this route only, and
+  // declares that choice in `users.policy.js` — so the exemption is asserted against
+  // the policy here rather than left as an unexplained hole in the guard list.
   const user = await createUser();
 
-  const res = await request(getApp()).get(`/api/users/${user.uid}`).expect(401);
+  const res = await request(getApp()).get(`/api/users/${user.uid}`).expect(200);
 
-  assert.equal(res.body.error.code, "AUTH_REQUIRED");
+  assert.equal(res.body.data.uid, user.uid);
+  assert.equal(
+    userPolicy.guardsFor(authenticate, userPolicy.Operation.PUBLIC_PROFILE).length,
+    0,
+    "the anonymous route must be declared public in the policy, not merely left unguarded"
+  );
 });
 
 // ── CMS ─────────────────────────────────────────────────────────────────────

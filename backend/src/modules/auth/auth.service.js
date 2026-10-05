@@ -12,19 +12,24 @@
  *     attacker's session instead of leaving it alive for seven days.
  *   - **Registration is transactional.** The user row and its `register_email`
  *     ledger row were independent writes.
- *   - **One password implementation.** The SHA-256 fallback and the bcrypt upgrade
- *     are one function here, not two blocks inline. The admin path still has its
- *     own copy, with SHA-1; M04 collapses the pair onto one `password.service`.
+ *   - **One password implementation.** M04 moves it to `core/password`, shared with
+ *     `modules/users` and `modules/admins`, and drops the SHA-256 fallback that used
+ *     to live in this file. See `core/password/password.service.js` for the four
+ *     divergent verify paths this replaced.
+ *   - **The ledger reads go through `modules/accounts`.** `del_account` and
+ *     `register_email` belong to that module as of M04; `auth.repository`'s copies of
+ *     those two queries are gone.
  *   - **`verifyAccessToken` returning `null` for everything** is gone. Every failure
  *     now carries a reason, and the 401s say different things.
  *
  * It never sees `req` or `res`, and it never imports Prisma.
  */
-const bcrypt = require("bcryptjs");
 const crypto = require("node:crypto");
 
 const cache = require("../../platform/cache");
 const queue = require("../../platform/queue");
+const password = require("../../core/password");
+const accounts = require("../accounts");
 const { AppError } = require("../../core/errors");
 
 const repository = require("./auth.repository");
@@ -55,9 +60,6 @@ const OTP_NAMESPACE = "otp";
 const OTP_TTL_SECONDS = 600;
 /** Reset tokens live 15 minutes, not the OTP's 10. */
 const RESET_TOKEN_TTL_SECONDS = 900;
-
-/** The only password hash this module writes. */
-const BCRYPT_COST = 12;
 
 /** @param {string} purpose */
 const OTP_PURPOSE = Object.freeze({
@@ -124,61 +126,16 @@ async function verifyOtp(email, code, purpose) {
 }
 
 // ─── passwords ──────────────────────────────────────────────────────────────
-
-/**
- * The single password implementation for the user path.
- *
- * Three accepted shapes, in order:
- *   1. bcrypt / argon2 by prefix — the normal case;
- *   2. a bare digest with no prefix — **SHA-256 hex**, written by the PHP
- *      application this API replaced. Compared in constant time, which the original
- *      `sha256 === stored` was not, and upgraded in place on a successful match so
- *      the fallback is a migration rather than a permanent branch.
- *
- * The admin path has a second, different fallback (SHA-1) inline in
- * `admin.service.js:67`. That is the divergence M04 removes by promoting this
- * function to a shared `password.service`; it is left alone here because changing
- * the admin login in the auth milestone is how a reviewer stops reading the diff.
- *
- * @param {string} plain
- * @param {string} stored
- * @returns {Promise<{ ok: boolean, upgrade: string|null }>} `upgrade` is a
- *   cost-12 hash to persist when the stored value was weaker or cost too little.
- */
-async function verifyPassword(plain, stored) {
-  if (typeof stored !== "string" || stored.length === 0) return { ok: false, upgrade: null };
-
-  if (stored.startsWith("$2") || stored.startsWith("$argon")) {
-    const ok = await bcrypt.compare(plain, stored);
-    if (!ok) return { ok: false, upgrade: null };
-
-    // Upgrade cost if needed. `getRounds` throws on a non-bcrypt string, which is
-    // why it is only reached once the prefix has already proved the format.
-    if (stored.startsWith("$2") && bcrypt.getRounds(stored) < BCRYPT_COST) {
-      return { ok: true, upgrade: await hashPassword(plain) };
-    }
-
-    return { ok: true, upgrade: null };
-  }
-
-  const legacy = crypto.createHash("sha256").update(plain).digest("hex");
-  const expected = Buffer.from(stored);
-  const actual = Buffer.from(legacy);
-
-  if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) {
-    return { ok: false, upgrade: null };
-  }
-
-  return { ok: true, upgrade: await hashPassword(plain) };
-}
-
-/**
- * @param {string} plain
- * @returns {Promise<string>}
- */
-function hashPassword(plain) {
-  return bcrypt.hash(plain, BCRYPT_COST);
-}
+//
+// M04 removed this module's own `verifyPassword` / `hashPassword` / `DUMMY_HASH`.
+// All three now come from `core/password`, which `modules/users` and
+// `modules/admins` also use — see that file's header for the four divergent verify
+// paths it replaced and why the SHA-256 fallback is gone.
+//
+// The one behavioural change visible from here: an account still holding a bare
+// SHA-256 digest from the PHP migration can no longer log in or change its
+// password, and must use `POST /auth/forgot-password`, which verifies an OTP
+// rather than a hash.
 
 /**
  * Everything the service needs to know about an address before touching it.
@@ -186,13 +143,20 @@ function hashPassword(plain) {
  * The blocked check reads the delete ledger; the "already exists" checks are what
  * turn a duplicate registration into a 409 instead of a unique-constraint 500.
  *
+ * Both ledgers now come from `modules/accounts`. `accountRestrictions` predates the
+ * ledger module and still names it in its comment; the query it reached for lived
+ * in `auth.repository` under an ADR 0002 cross-module note. That note is now a real
+ * capability call.
+ *
  * @param {string} email already normalised
  * @returns {Promise<{ deleted: boolean, blocked: boolean }>}
  */
 async function accountRestrictions(email) {
-  // Cross-module read of `del_account`; see auth.repository.js.
-  const deleted = await repository.findDeletedAccountByEmail(email);
-  return { deleted: Boolean(deleted), blocked: false };
+  const ledger = await accounts.capabilities.findLedgerByEmail(email);
+  // `ledgerVerdict` is the module's rule for reading the two-column vocabulary:
+  // a `block` row and a `delete` row both mean "cannot sign in".
+  const verdict = accounts.capabilities.ledgerVerdict(ledger);
+  return { deleted: verdict.deleted, blocked: verdict.blocked };
 }
 
 /**
@@ -209,8 +173,11 @@ async function sendVerificationOtp(email) {
     code: "EMAIL_BLOCKED",
   });
 
-  // Cross-module read of `register_email`; see auth.repository.js.
-  const existingRegistration = await repository.findRegisterEmailByEmail(normalizedEmail);
+  // `register_email` belongs to `modules/accounts` as of M04. The duplicate-409
+  // depends on this ledger specifically and not on `user`: the ledger outlives a
+  // deleted account, which is what stops a deleted address silently re-registering.
+  const existingRegistration =
+    await accounts.capabilities.findRegistrationByEmail(normalizedEmail);
   if (existingRegistration) {
     throw new AppError(
       `Email already has a ${existingRegistration.utype}-${existingRegistration.type} account`,
@@ -278,10 +245,10 @@ async function completeRegistration(data) {
     throw new AppError("Email already exists", 409, "EMAIL_EXISTS");
   }
 
-  const hashedPassword = await hashPassword(data.password);
+  const hashedPassword = await password.hash(data.password);
   const now = new Date();
 
-  const user = await repository.createUserWithLedger(
+  const user = await accounts.capabilities.createUserWithRegistration(
     {
       uname: data.uname,
       lname: data.lname,
@@ -325,24 +292,48 @@ async function completeRegistration(data) {
  * @param {string} password
  * @returns {Promise<object>} the session: `{ user, accessToken, refreshToken }`
  */
-async function loginUser(email, password) {
+async function loginUser(email, plain) {
   const normalizedEmail = normalizeEmail(email);
 
   const user = await repository.findUserByEmail(normalizedEmail);
 
+  // Two independent switches, and **both** have to be fatal:
+  //
+  //   - `del_account` — `accountRestrictions` reads the ledger. A `block` row means
+  //     the address was frozen by an admin; a `delete` row means it was removed.
+  //     Either is terminal at login.
+  //   - `user.adminblock` — the admin's own switch on the user row, which is not the
+  //     ledger. `POST /api/users/block/:id` sets this column and writes no ledger
+  //     row, which is exactly why the column is still checked separately.
+  //
+  // The `||` rather than a spread matters. `...restrictions, blocked: adminblock`
+  // compiles and behaves identically for a *deleted* row, which is why the pinned
+  // contract suite did not catch it — but it silently discards the ledger's
+  // `blocked`, so a `type: "block"` row stopped locking the account out. Pre-M04
+  // this was one `deleted: Boolean(await findDeletedAccountByEmail(...))`, which
+  // treated *both* ledger types as fatal.
+  const restrictions = await accountRestrictions(normalizedEmail);
   policy.assertNotBlocked(
-    { deleted: Boolean(await repository.findDeletedAccountByEmail(normalizedEmail)), blocked: user?.adminblock === 1 },
+    {
+      deleted: restrictions.deleted,
+      blocked: restrictions.blocked || user?.adminblock === 1,
+    },
     { message: "This account has been blocked", code: "ACCOUNT_BLOCKED" }
   );
 
   // One message for "no such user" and "wrong password", and the same work either
   // way, so the endpoint cannot be used to enumerate registered addresses.
+  //
+  // `password.burn()` is the shared service's dummy-hash comparison. The previous
+  // code kept its own `DUMMY_HASH` constant here; that constant now lives in
+  // `core/password`, so this module has exactly one place where a nonexistent
+  // account is made to cost a bcrypt hash.
   if (!user) {
-    await verifyPassword(password, DUMMY_HASH);
+    await password.burn();
     throw new AppError("Email or password does not match", 401, "AUTH_FAILED");
   }
 
-  const { ok, upgrade } = await verifyPassword(password, user.upass);
+  const { ok, upgrade } = await password.verify(plain, user.upass);
   if (!ok) {
     throw new AppError("Email or password does not match", 401, "AUTH_FAILED");
   }
@@ -352,16 +343,6 @@ async function loginUser(email, password) {
 
   return mapper.toSession(user, tokens.issuePair(user.uid, user.uemail, "user", user.tokenVersion));
 }
-
-/**
- * A real cost-12 hash of a value nobody knows, compared against when the address is
- * unknown.
- *
- * Without it, "no such user" returns in the time bcrypt takes and "wrong password"
- * takes the same — and the difference *is* the enumeration oracle. A fixed dummy
- * also costs one hash per unknown address, which is the point.
- */
-const DUMMY_HASH = bcrypt.hashSync("amaken-nonexistent-account", BCRYPT_COST);
 
 /**
  * `POST /forgot-password`.
@@ -447,7 +428,7 @@ async function resetPassword(email, resetToken, newPassword) {
   const actual = Buffer.from(String(resetToken));
   if (expected.length !== actual.length || !crypto.timingSafeEqual(expected, actual)) throw invalid;
 
-  const hashedPassword = await hashPassword(newPassword);
+  const hashedPassword = await password.hash(newPassword);
   await repository.replacePassword(normalizedEmail, hashedPassword, new Date().toISOString());
 
   return { message: "Password updated successfully" };
@@ -578,7 +559,4 @@ module.exports = {
   resetPassword,
   refreshTokens,
   logout,
-  // one function, so M04 can promote it to `password.service` without a rewrite
-  hashPassword,
-  verifyPassword,
 };

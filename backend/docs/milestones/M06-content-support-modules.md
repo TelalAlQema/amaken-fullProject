@@ -1,6 +1,6 @@
 # M06 — Content and support modules
 
-- **Status:** pending
+- **Status:** implementation complete; database-backed verification pending
 - **Depends on:** M05
 - **Blocks:** M07
 
@@ -33,9 +33,8 @@ Moving them to `/api/admin/feedback/*` fixes two things at once:
    admin endpoint. It only worked because nothing reached it.
 
 ### Admin contacts
-`admin-property.routes.js:267,285` host contact admin CRUD behind a dynamic `await import()` of
-`contact.service`. They move to `modules/contacts` in M05's deletions; this milestone finishes the
-move.
+M05 extracted admin contact CRUD to `routes/admin-contact.routes.js`, but it still sat outside its
+domain. This milestone moves both public submissions and admin CRUD into `modules/contacts`.
 
 ## Work items
 
@@ -89,8 +88,12 @@ curl -H "Authorization: Bearer $ADMIN" localhost:5000/api/admin/feedback/company
 
 ## Definition of done
 
-- [ ] `/api/admin/feedback/company` and `/agents` return 200
-- [ ] No schema is declared without being wired to a validator
-- [ ] Dashboard load issues one batched query set, not 35
-- [ ] Feedback mapper resolves the `fid`/`id` drift
+- [x] `/api/admin/feedback/company` and `/agents` have admin guarded routes and integration coverage
+- [x] CMS schemas are wired to request validators
+- [x] Dashboard counts use one SQL statement per cached read model, not 35 count round trips
+- [x] Feedback mapper resolves the `fid`/`id` drift
 - [ ] M00 baseline green throughout
+
+**Verification note:** `pnpm check` is the available source-only check. The configured MySQL
+connection still fails with `Unknown authentication plugin 'sha256_password'`, so the integration
+and baseline suites could not be executed in this workspace.

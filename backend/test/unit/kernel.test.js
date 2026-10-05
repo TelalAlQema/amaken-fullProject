@@ -310,18 +310,13 @@ test("the envelope helpers produce ADR 0003's shapes", () => {
   assert.equal(empty.statusCode, 204);
   assert.equal(empty.ended, true);
 
-  // Canonical `items`, with the pre-M07 alias alongside while the flag is on.
+  // Lists expose only the canonical `items` key after M07.
   const paged = res();
-  paged.paginated({ items: [1, 2], pagination, legacyKey: "properties" });
+  paged.paginated({ items: [1, 2], pagination });
   assert.deepEqual(paged.body, {
     success: true,
-    data: { items: [1, 2], pagination, properties: [1, 2] },
+    data: { items: [1, 2], pagination },
   });
-
-  // …and without it once M07 flips the flag.
-  const canonical = res();
-  canonical.paginated({ items: [1], pagination, legacyKey: "properties", legacyKeyEnabled: false });
-  assert.deepEqual(canonical.body.data, { items: [1], pagination });
 
   const failed = res();
   failed.fail(409, "Duplicate", "CONFLICT");

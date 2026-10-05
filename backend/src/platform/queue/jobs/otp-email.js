@@ -8,15 +8,25 @@
  * queue takes SMTP off the request; the retry policy means a transient failure no
  * longer loses the mail.
  *
- * The processor **throws** on failure rather than returning a boolean, and that
- * is the load-bearing line: `email.service` catches its own send errors and
- * returns `false`, so a processor that returned that value would report success to
- * the queue, the job would be marked `completed`, and the OTP would never be
- * delivered — with the queue showing a clean run. Throwing is how "the mail did
- * not go out" becomes a retry and then a visible `failed` row.
+ * The processor **throws** on failure, and that is the load-bearing line: it is how
+ * "the mail did not go out" becomes a retry and then a visible `failed` row.
+ *
+ * **M04 removed the boolean.** This used to be
+ *
+ *     const sent = await emailService.sendOtpEmail(to, otp);
+ *     if (!sent) throw new Error(…);
+ *
+ * which is a hand-rolled version of what an exception already does, and existed
+ * only because `services/email.service` swallowed every send error and returned
+ * `false`. The adapter in `platform/mail` now throws `MailDeliveryError` itself, so
+ * the check below is gone and the throw is the adapter's. Retry behaviour is
+ * unchanged: a failure throws either way, and the queue sees the same rejection.
+ *
+ * The import also moves from `services/` to `platform/mail`, which is the layering
+ * fix: this file is in `platform`, and it was reaching up into a service.
  */
 const config = require("../../../config");
-const emailService = require("../../../services/email.service");
+const mail = require("../../mail");
 
 /**
  * @param {object} payload
@@ -35,13 +45,10 @@ async function processOtpEmail({ to, otp, purpose }) {
     throw new Error(`otp-email job is missing ${!to ? "to" : "otp"}`);
   }
 
-  const sent =
-    purpose === "reset"
-      ? await emailService.sendPasswordResetEmail(to, otp)
-      : await emailService.sendOtpEmail(to, otp);
-
-  if (!sent) {
-    throw new Error(`SMTP rejected the ${purpose || "register"} OTP email to ${to}`);
+  if (purpose === "reset") {
+    await mail.sendPasswordReset(to, otp);
+  } else {
+    await mail.sendOtp(to, otp);
   }
 
   return { to, purpose: purpose || "register", site: config.mail.siteName };

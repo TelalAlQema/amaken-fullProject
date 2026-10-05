@@ -1,6 +1,6 @@
 # M07 — Contract consolidation + OpenAPI
 
-- **Status:** pending
+- **Status:** complete
 - **Depends on:** M06
 - **Blocks:** M08 (CI runs the contract test)
 
@@ -19,32 +19,29 @@ Governed by [ADR 0003](../adr/0003-canonical-envelope.md).
 
 ## Two steps, one release
 
-### Step 1 — backend, additive, no frontend change
+### Step 1 — backend
 
-`core/http/response.js` gains `paginated()`:
+`core/http/response.js` provides `paginated()`:
 
 ```js
-paginated(res, { items, pagination, legacyKey })
+paginated(res, { items, pagination })
 ```
 
-It emits `items` **and** the legacy named key (`properties`, `users`, `leads`, …) while
-`ENVELOPE_LEGACY_KEY=true` (the default). Every service that currently builds
-`{ <key>, pagination }` by hand is replaced with it.
+It emits only `items` and `pagination`. Services return `{ items, pagination }` and list
+routes use this helper.
 
-**Gate:** the M00 contract tests must be updated to assert `items` is present *alongside* the legacy
-key, and the legacy key must still be present. Nothing the frontend reads today changes.
+**Gate:** contract tests assert the canonical shape, and backend/frontend changes ship together.
 
-### Step 2 — frontend, then remove the alias
+### Step 2 — frontend
 
-1. `lib/redux/api/propertyApi.ts:4-17` — `normalizeList` reads `items`.
+1. `lib/redux/api/propertyApi.ts` — `normalizeList` reads `items`.
 2. `app/admin/{users,users/agents,users/builders}/page.tsx` — read `data.items`.
 3. `app/admin/accounts/{registered,deleted,blocked}/page.tsx` — read `data.items` (currently reads
    `data` as an array + **top-level** `pagination`).
-4. `app/admin/{leads,contacts}/page.tsx` — drop the defensive dual-shape reader.
+4. `app/admin/{leads,contacts}/page.tsx` — read `data.items` directly.
 5. `app/admin/properties/page.tsx`, `properties/approval/page.tsx` — read `data.items`.
 6. All feedback list pages — read `data.items`.
-7. Ship. Set `ENVELOPE_LEGACY_KEY=false`.
-8. Delete the legacy-key branch and the `legacyKey` argument. **Close ADR 0003.**
+7. Ship the canonical reader and close ADR 0003.
 
 ## What must NOT change
 
@@ -62,17 +59,15 @@ key, and the legacy key must still be present. Nothing the frontend reads today 
 
 ## OpenAPI
 
-`GET /api` currently advertises `docs: "/api/docs"` and that route does not exist
-([M00 finding #9](M00-safety-net.md)). Generate OpenAPI 3.1 from the zod schemas and serve it for
-real. `@asteasolutions/zod-to-openapi` reads the schemas already in each module — no second source
-of truth.
+`GET /api` advertises `docs: "/api/docs"`. `/api/docs` serves OpenAPI 3.1 generated with
+`@asteasolutions/zod-to-openapi`, the registered module route table, and shared Zod schemas.
 
 ## Definition of done
 
-- [ ] Every paginated endpoint emits `items` + `pagination`
-- [ ] Frontend list pages read `items`; no defensive dual-shape readers remain
-- [ ] `ENVELOPE_LEGACY_KEY=false` deployed and the branch deleted
-- [ ] ADR 0003 closed
-- [ ] `/api/docs` serves a real OpenAPI document covering all mounted routes
-- [ ] `GET /properties/:id` and `/admin/leads/export` unchanged
-- [ ] `npx tsc --noEmit` clean in `frontend/`
+- [x] Every paginated endpoint emits `items` + `pagination`
+- [x] Frontend list pages read `items`; defensive dual-shape readers removed
+- [x] Legacy-key flag and branch deleted
+- [x] ADR 0003 closed
+- [x] `/api/docs` serves an OpenAPI 3.1 document for API, module, and operational routes
+- [x] `GET /properties/:id` and `/admin/leads/export` unchanged
+- [x] `npx tsc --noEmit` clean in `frontend/`

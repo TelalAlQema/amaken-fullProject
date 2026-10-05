@@ -19,8 +19,8 @@ export default function ProfilePage() {
 
   const loading = propsLoading || fbLoading || aboutLoading;
   const properties = (propRes?.success ? propRes.data : []) as Property[];
-  const feedback = (fbRes?.success ? fbRes.data : []) as Feedback[];
-  const feedbackAboutMe = (aboutRes?.success ? aboutRes.data : []) as Feedback[];
+  const feedback = (fbRes?.success ? fbRes.data?.items : []) as unknown as Feedback[];
+  const feedbackAboutMe = (aboutRes?.success ? aboutRes.data?.items : []) as unknown as Feedback[];
 
   if (!user) return null;
 

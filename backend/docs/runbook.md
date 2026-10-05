@@ -51,7 +51,6 @@ clone with no `.env` still has to run the contract tests.
 | `ADMIN_MAIN_PHONE` | — | Must match `admin.main` for the super-admin row |
 | `SHUTDOWN_TIMEOUT_MS` | `10000` | Hard cap on the drain |
 | `DB_CONNECT_RETRIES` / `DB_CONNECT_RETRY_DELAY_MS` | `5` / `1000` | Boot retries before giving up on MySQL |
-| `ENVELOPE_LEGACY_KEY` | `true` | ADR 0003. Flipped to `false` in [M07](milestones/M07-contract-consolidation.md) |
 | `TEST_DB_NAME` | `amaken_db_test` | Must end in `_test` — `scripts/test-db.js` refuses otherwise |
 
 ### Load order

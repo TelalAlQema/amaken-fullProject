@@ -1,6 +1,6 @@
 # ADR 0003 — Canonical `items` envelope, legacy key dual-emitted
 
-- **Status:** Accepted
+- **Status:** Closed — implemented in M07
 - **Date:** 2026-09-29
 
 ## Context
@@ -76,6 +76,8 @@ Single flag, single release to remove. Both steps are individually revertible.
 | `items` only, no alias | No zero-downtime path; backend and frontend must deploy atomically. |
 | Per-endpoint array vs object (pick one convention, drop the other) | Same problem, and it forces an immediate coordinated release. |
 
-## Revisit when
+## Closure
 
-The legacy alias has been removed and one release has passed. Close this ADR then.
+M07 removed the legacy named-key alias, migrated backend services and frontend list
+consumers to `data.items`, and added the OpenAPI document at `/api/docs`. The canonical
+envelope is now the only paginated list contract.

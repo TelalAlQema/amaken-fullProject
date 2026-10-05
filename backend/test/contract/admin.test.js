@@ -4,11 +4,9 @@
  * Covers the two-step admin login (PIN then email/password), role enforcement,
  * admin-only data access, and the dashboard routes.
  *
- * Two assertions here document KNOWN BUGS and are written to assert the CURRENT
- * behaviour so the suite is green at baseline:
- *   - the PIN gate is client-side only, so it is trivially bypassable
- *   - the frontend calls /api/admin/dashboard/*, but the routes are mounted at
- *     /api/admin/*, so all three dashboard requests 404
+ * Remaining known issues: the PIN gate is still client-side only, and the
+ * frontend's stale `/api/admin/dashboard/*` prefix is outside this milestone.
+ * M06 fixes the previous contact-route and admin-feedback divergences below.
  */
 const test = require("node:test");
 const assert = require("node:assert/strict");
@@ -206,15 +204,15 @@ test("PUT /api/admin/profile updates the admin row", async () => {
 
 // ── user management ─────────────────────────────────────────────────────────
 
-test("GET /api/admin/users returns { users, pagination }", async () => {
+test("GET /api/admin/users returns { items, pagination }", async () => {
   const admin = await createAdmin();
   await createUser();
   await createUser({ uemail: "agent@example.com", utype: "Agent" });
 
   const res = await asAdmin(admin).get("/api/admin/users?type=User").expect(200);
 
-  assert.ok(Array.isArray(res.body.data.users));
-  assert.equal(res.body.data.users.length, 1, "filtered to utype=User");
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items.length, 1, "filtered to utype=User");
 });
 
 test("GET /api/admin/users/agents and /builders filter by type", async () => {
@@ -225,9 +223,9 @@ test("GET /api/admin/users/agents and /builders filter by type", async () => {
   const agents = await asAdmin(admin).get("/api/admin/users/agents").expect(200);
   const builders = await asAdmin(admin).get("/api/admin/users/builders").expect(200);
 
-  assert.equal(agents.body.data.users.length, 1);
-  assert.equal(agents.body.data.users[0].utype, "Agent");
-  assert.equal(builders.body.data.users[0].utype, "Builder");
+  assert.equal(agents.body.data.items.length, 1);
+  assert.equal(agents.body.data.items[0].utype, "Agent");
+  assert.equal(builders.body.data.items[0].utype, "Builder");
 });
 
 test("PUT /api/admin/users/:id/status drives activate/deactivate/freeze", async () => {
@@ -273,7 +271,7 @@ test("DELETE /api/admin/users/:id DOES write a DelAccount ledger row", async () 
 
 // ── properties ──────────────────────────────────────────────────────────────
 
-test("GET /api/admin/properties returns { properties, pagination } including unapproved", async () => {
+test("GET /api/admin/properties returns { items, pagination } including unapproved", async () => {
   const admin = await createAdmin();
   const user = await createUser();
   await createProperty({ uid: user.uid, adminapproval: 1, title: "Approved" });
@@ -281,7 +279,7 @@ test("GET /api/admin/properties returns { properties, pagination } including una
 
   const res = await asAdmin(admin).get("/api/admin/properties").expect(200);
 
-  assert.equal(res.body.data.properties.length, 2, "admin sees unapproved rows");
+  assert.equal(res.body.data.items.length, 2, "admin sees unapproved rows");
 });
 
 test("GET /api/admin/properties/approval lists only pending rows", async () => {
@@ -292,7 +290,7 @@ test("GET /api/admin/properties/approval lists only pending rows", async () => {
 
   const res = await asAdmin(admin).get("/api/admin/properties/approval").expect(200);
 
-  assert.equal(res.body.data.properties.length, 1);
+  assert.equal(res.body.data.items.length, 1);
 });
 
 test("PUT /api/admin/properties/:id/approve sets adminapproval=1", async () => {
@@ -331,7 +329,7 @@ test("Admin approve/hide are NOT idempotent-safe: hide and disapprove are the sa
 
 // ── leads ───────────────────────────────────────────────────────────────────
 
-test("GET /api/admin/leads returns { leads, pagination }", async () => {
+test("GET /api/admin/leads returns { items, pagination }", async () => {
   const admin = await createAdmin();
   const user = await createUser();
   const property = await createProperty({ uid: user.uid });
@@ -339,8 +337,8 @@ test("GET /api/admin/leads returns { leads, pagination }", async () => {
 
   const res = await asAdmin(admin).get("/api/admin/leads").expect(200);
 
-  assert.ok(Array.isArray(res.body.data.leads));
-  assert.equal(res.body.data.leads[0].email, "lead@example.com");
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items[0].email, "lead@example.com");
 });
 
 test("GET /api/admin/leads is the only way to read leads without a property id", async () => {
@@ -398,68 +396,48 @@ test("POST /api/admin/leads/bulk-delete with an empty list is a zod VALIDATION_E
 
 // ── contacts / feedback ─────────────────────────────────────────────────────
 
-test("BUG: GET /api/admin/contacts always 500s (broken dynamic import)", async () => {
-  // FIXME(M00.5): admin-property.routes.js:272 does
-  //   const { listContacts } = await import("../services/contact.service")
-  // ESM import() does NOT apply CJS extension resolution, so this throws
-  // ERR_MODULE_NOT_FOUND; the handler forwards it to errorHandler and the admin
-  // gets a 500. Contact submissions therefore cannot be listed at all. Same bug
-  // on DELETE /api/admin/contacts/:id (line 289). The fixed test asserts 200.
+test("GET /api/admin/contacts lists submissions", async () => {
   const admin = await createAdmin();
   await createContact({ email: "prospect@example.com" });
 
-  const res = await asAdmin(admin).get("/api/admin/contacts").expect(500);
-
-  assert.equal(res.body.success, false);
-  // The intended contract, currently unreachable:
-  //   assert.ok(Array.isArray(res.body.data.contacts));
-  //   assert.equal(res.body.data.contacts[0].email, "prospect@example.com");
+  const res = await asAdmin(admin).get("/api/admin/contacts").expect(200);
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items[0].email, "prospect@example.com");
 });
 
-test("BUG: DELETE /api/admin/contacts/:id always 500s (same dynamic import)", async () => {
+test("DELETE /api/admin/contacts/:id deletes a submission", async () => {
   const admin = await createAdmin();
   const contact = await createContact();
 
-  await asAdmin(admin).del(`/api/admin/contacts/${contact.id}`).expect(500);
-
-  // Intended: the row is gone.
-  assert.ok(await prisma.contact.findFirst({ where: { id: contact.id } }));
+  await asAdmin(admin).del(`/api/admin/contacts/${contact.id}`).expect(200);
+  assert.equal(await prisma.contact.findFirst({ where: { id: contact.id } }), null);
 });
 
 // ── feedback ────────────────────────────────────────────────────────────────
 
-test("DIVERGENCE: admin feedback lives at /api/feedback/admin/*, not /api/admin/feedback/*", async () => {
-  // FIXME(M00.10): feedback.routes.js:130,147 defines /admin/company and
-  // /admin/agents under a router mounted at /feedback, so the real paths are
-  // /api/feedback/admin/{company,agents}. frontend/lib/redux/api/adminApi.ts:242
-  // and :246 call /admin/feedback/company and /admin/feedback/agents, which 404.
+test("admin feedback uses the frontend /api/admin/feedback paths", async () => {
   const admin = await createAdmin();
   const user = await createUser();
   await createFeedback({ uid: user.uid });
 
-  // What the frontend actually asks for — 404.
   for (const path of ["/api/admin/feedback/company", "/api/admin/feedback/agents"]) {
-    const res = await asAdmin(admin).get(path).expect(404);
-    assert.equal(res.body.error.message, "Route not found", `${path} 404s`);
+    const res = await asAdmin(admin).get(path).expect(200);
+    assert.equal(res.body.success, true);
   }
-
-  // What the backend actually serves — works.
-  const real = await asAdmin(admin).get("/api/feedback/admin/company").expect(200);
-  assert.equal(real.body.success, true);
 });
 
-test("GET /api/feedback/admin/company requires the admin role", async () => {
+test("GET /api/admin/feedback/company requires the admin role", async () => {
   const user = await createUser();
 
   const res = await request(getApp())
-    .get("/api/feedback/admin/company")
+    .get("/api/admin/feedback/company")
     .set("Authorization", `Bearer ${userAccessToken(user.uid, user.uemail)}`)
     .expect(403);
 
   assert.equal(res.body.error.code, "FORBIDDEN");
 });
 
-test("GET /api/feedback/my returns { feedbacks, pagination }", async () => {
+test("GET /api/feedback/my returns { items, pagination }", async () => {
   const user = await createUser();
   await createFeedback({ uid: user.uid });
 
@@ -470,8 +448,8 @@ test("GET /api/feedback/my returns { feedbacks, pagination }", async () => {
 
   // Pinned: the array key is `feedbacks`, plural — inconsistent with
   // { contacts }, { leads }, { properties } elsewhere. M00.10 normalises.
-  assert.ok(Array.isArray(res.body.data.feedbacks));
-  assert.equal(res.body.data.feedbacks.length, 1);
+  assert.ok(Array.isArray(res.body.data.items));
+  assert.equal(res.body.data.items.length, 1);
 });
 
 // ── dashboard: the path divergence ──────────────────────────────────────────

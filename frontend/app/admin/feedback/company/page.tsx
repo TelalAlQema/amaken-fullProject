@@ -9,8 +9,8 @@ interface Feedback {
   receive_email?: string;
   rating?: number;
   description?: string;
-  status?: string;
-  created_at?: string;
+  status?: number | string;
+  created_at?: Date | string;
 }
 
 function StarRating({ rating = 0 }: { rating: number }) {
@@ -30,7 +30,7 @@ function StarRating({ rating = 0 }: { rating: number }) {
 export default function CompanyFeedbackPage() {
   const { data, isLoading } = useGetCompanyFeedbackQuery();
 
-  const items: Feedback[] = (data?.data as unknown as Feedback[]) ?? [];
+  const items: Feedback[] = data?.data?.items ?? [];
 
   return (
     <div className="bg-gray-50 min-h-screen">
